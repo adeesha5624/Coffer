@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'pin_screen.dart';
+import 'pin_helper.dart';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -33,19 +35,38 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ✅ Dashboard එකට යන function එක
-  void _navigateToDashboard() {
+  // ✅ Login success වුණාට පස්සේ PIN check කරලා navigate කරනවා
+  Future<void> _onLoginSuccess() async {
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DashboardScreen(
-          onThemeChanged: widget.onThemeChanged,
-          isDarkMode: widget.isDarkMode,
+    final hasPin = await PinHelper.hasPin();
+
+    if (!mounted) return;
+
+    if (hasPin) {
+      // PIN දැනටමත් set කරලා තියෙනවා → Dashboard එකට යනවා
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(
+            onThemeChanged: widget.onThemeChanged,
+            isDarkMode: widget.isDarkMode,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // PIN නැ → PIN Setup Screen එකට යනවා
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PinScreen(
+            mode: PinMode.setup,
+            onThemeChanged: widget.onThemeChanged,
+            isDarkMode: widget.isDarkMode,
+          ),
+        ),
+      );
+    }
   }
 
   // ✅ Google Sign-In — updated for google_sign_in v7
@@ -74,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      _navigateToDashboard();
+      await _onLoginSuccess();
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ✅ Phone OTP Send
+  // ✅ WhatsApp (Phone) OTP Send — Firebase Phone Auth use කරනවා
   Future<void> _verifyPhoneNumber() async {
     String phoneNumber = _phoneController.text.trim();
 
@@ -114,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
       verificationCompleted: (PhoneAuthCredential credential) async {
         await FirebaseAuth.instance.signInWithCredential(credential);
 
-        _navigateToDashboard();
+        await _onLoginSuccess();
       },
 
       // Verification failed
@@ -171,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      _navigateToDashboard();
+      await _onLoginSuccess();
     } catch (e) {
       if (!mounted) return;
 
@@ -225,88 +246,165 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
-                // ================= PHONE LOGIN =================
+                // ================= WHATSAPP LOGIN =================
                 if (!_isOtpSent) ...[
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-
-                    style: const TextStyle(color: Colors.white),
-
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.phone_android,
-                        color: Colors.cyanAccent,
+                  // WhatsApp branded phone input
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: const Color(0xFF25D366).withValues(alpha: 0.2),
                       ),
+                    ),
+                    child: TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
 
-                      hintText: "Phone Number (+94771234567)",
+                      style: const TextStyle(color: Colors.white),
 
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      decoration: InputDecoration(
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.only(left: 12, right: 8),
+                          child: Icon(
+                            Icons.chat_rounded,
+                            color: Color(0xFF25D366),
+                            size: 24,
+                          ),
+                        ),
 
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
+                        hintText: "WhatsApp Number (+94771234567)",
 
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        hintStyle: const TextStyle(color: Colors.white38),
 
-                        borderSide: BorderSide.none,
+                        filled: true,
+                        fillColor: const Color(0xFF1E293B),
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 15),
 
+                  // WhatsApp Send OTP Button
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 52,
 
                     child: ElevatedButton.icon(
                       onPressed: _isLoading ? null : _verifyPhoneNumber,
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyanAccent,
+                        backgroundColor: const Color(0xFF25D366),
 
-                        foregroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+
+                        elevation: 4,
+                        shadowColor: const Color(0xFF25D366).withValues(alpha: 0.4),
 
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
 
-                      icon: const Icon(Icons.send_rounded),
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send_rounded, size: 20),
 
-                      label: const Text(
-                        "Send OTP",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      label: Text(
+                        _isLoading ? "Sending..." : "Send OTP via WhatsApp",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                   ),
                 ] else ...[
-                  TextField(
-                    controller: _otpController,
-
-                    keyboardType: TextInputType.number,
-
-                    maxLength: 6,
-
-                    textAlign: TextAlign.center,
-
-                    style: const TextStyle(color: Colors.white),
-
-                    decoration: InputDecoration(
-                      hintText: "Enter 6-Digit OTP",
-
-                      hintStyle: const TextStyle(color: Colors.white38),
-
-                      filled: true,
-
-                      fillColor: const Color(0xFF1E293B),
-
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-
-                        borderSide: BorderSide.none,
+                  // OTP Verification UI
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF25D366).withValues(alpha: 0.3),
                       ),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.verified_user_rounded,
+                          color: Color(0xFF25D366),
+                          size: 40,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Enter Verification Code",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          "Code sent to ${_phoneController.text}",
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _otpController,
+
+                          keyboardType: TextInputType.number,
+
+                          maxLength: 6,
+
+                          textAlign: TextAlign.center,
+
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            letterSpacing: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+
+                          decoration: InputDecoration(
+                            hintText: "• • • • • •",
+
+                            hintStyle: const TextStyle(
+                              color: Colors.white24,
+                              letterSpacing: 8,
+                            ),
+
+                            counterText: "",
+
+                            filled: true,
+
+                            fillColor: const Color(0xFF0F172A),
+
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -314,38 +412,58 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 52,
 
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: _isLoading ? null : _signInWithOTP,
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.greenAccent,
+                        backgroundColor: const Color(0xFF25D366),
 
-                        foregroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+
+                        elevation: 4,
+                        shadowColor: const Color(0xFF25D366).withValues(alpha: 0.4),
 
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
 
-                      child: const Text(
-                        "Verify & Login",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.verified_rounded, size: 20),
+
+                      label: Text(
+                        _isLoading ? "Verifying..." : "Verify & Login",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                   ),
 
-                  TextButton(
+                  const SizedBox(height: 8),
+
+                  TextButton.icon(
                     onPressed: () {
                       setState(() {
                         _isOtpSent = false;
                         _otpController.clear();
                       });
                     },
-
-                    child: const Text(
-                      "Change Phone Number",
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white38, size: 16),
+                    label: const Text(
+                      "Change Number",
                       style: TextStyle(color: Colors.white38),
                     ),
                   ),
@@ -375,13 +493,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 // ================= GOOGLE LOGIN =================
                 SizedBox(
                         width: double.infinity,
-                        height: 50,
+                        height: 52,
 
                         child: OutlinedButton.icon(
                           onPressed: _isLoading ? null : _signInWithGoogle,
 
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.white30),
+                            side: const BorderSide(color: Colors.white24),
 
                             foregroundColor: Colors.white,
 
@@ -396,9 +514,30 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.white,
                           ),
 
-                          label: const Text("Continue with Google"),
+                          label: const Text(
+                            "Continue with Google",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
+
+                const SizedBox(height: 40),
+
+                // Security note
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.shield_rounded, color: Colors.white12, size: 14),
+                    SizedBox(width: 6),
+                    Text(
+                      "Secured with end-to-end encryption",
+                      style: TextStyle(color: Colors.white12, fontSize: 11),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

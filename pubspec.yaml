@@ -20,6 +20,10 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.8
 
+  # PIN & Local Storage
+  shared_preferences: ^2.5.3
+  crypto: ^3.0.6
+
   # Database & Storage
   sqflite: ^2.4.1
   path: ^1.9.1

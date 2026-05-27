@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -9,7 +10,12 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('wallet.db'); // 👈 ඔයාගේ මුල්ම DB ෆයිල් නම
+    
+    // Get the current logged in user's UID to create a specific DB
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String dbName = user != null ? 'wallet_${user.uid}.db' : 'wallet.db';
+    
+    _database = await _initDB(dbName);
     return _database!;
   }
 
@@ -18,6 +24,14 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
 
     return await openDatabase(path, version: 1, onCreate: _onCreate);
+  }
+
+  // 💡 Reset/Close the database connection (called on logout)
+  Future<void> closeDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
   }
 
   // 💡 ඩේටාබේස් එක මුලින්ම හැදෙද්දී ඔක්කොම ටේබල් ටික නිවැරදිව ක්‍රියේට් කිරීම
@@ -184,5 +198,88 @@ class DatabaseHelper {
   Future<int> deleteDebt(int id) async {
     final db = await instance.database;
     return await db.delete('debts', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ==========================================
+  // 🔍 ADVANCED SEARCH & ANALYTICS
+  // ==========================================
+
+  /// Name/Reason search + Date Range filter combine කරලා debts return කරනවා
+  /// query empty නම් date range එකට ඔක්කොම debts return කරනවා
+  Future<List<Map<String, dynamic>>> searchByDateRange({
+    String? query,
+    required String dateFrom,
+    required String dateTo,
+  }) async {
+    final db = await instance.database;
+
+    if (query != null && query.trim().isNotEmpty) {
+      String searchQuery = '%${query.trim()}%';
+      return await db.query(
+        'debts',
+        where:
+            '(person_name LIKE ? OR reason LIKE ?) AND date >= ? AND date <= ?',
+        whereArgs: [searchQuery, searchQuery, dateFrom, dateTo],
+        orderBy: 'date DESC',
+      );
+    } else {
+      return await db.query(
+        'debts',
+        where: 'date >= ? AND date <= ?',
+        whereArgs: [dateFrom, dateTo],
+        orderBy: 'date DESC',
+      );
+    }
+  }
+
+  /// Category/reason එකට match වෙන debts date range එකට analytics return කරනවා
+  /// totalGiven, totalTaken, netBalance, count
+  Future<Map<String, dynamic>> getCategoryAnalytics({
+    required String category,
+    required String dateFrom,
+    required String dateTo,
+  }) async {
+    final db = await instance.database;
+    String searchQuery = '%${category.trim()}%';
+
+    final givenResult = await db.rawQuery(
+      "SELECT SUM(amount) as total, COUNT(*) as count FROM debts "
+      "WHERE (person_name LIKE ? OR reason LIKE ?) AND type = 'Give' AND date >= ? AND date <= ?",
+      [searchQuery, searchQuery, dateFrom, dateTo],
+    );
+
+    final takenResult = await db.rawQuery(
+      "SELECT SUM(amount) as total, COUNT(*) as count FROM debts "
+      "WHERE (person_name LIKE ? OR reason LIKE ?) AND type = 'Take' AND date >= ? AND date <= ?",
+      [searchQuery, searchQuery, dateFrom, dateTo],
+    );
+
+    double totalGiven =
+        (givenResult.first['total'] as num?)?.toDouble() ?? 0.0;
+    double totalTaken =
+        (takenResult.first['total'] as num?)?.toDouble() ?? 0.0;
+    int givenCount = (givenResult.first['count'] as int?) ?? 0;
+    int takenCount = (takenResult.first['count'] as int?) ?? 0;
+
+    return {
+      'totalGiven': totalGiven,
+      'totalTaken': totalTaken,
+      'netBalance': totalTaken - totalGiven,
+      'totalCount': givenCount + takenCount,
+    };
+  }
+
+  /// Date range එකට ඔක්කොම debts, reason wise group කරලා totals return කරනවා
+  Future<List<Map<String, dynamic>>> getExpenseAnalyticsByCategory({
+    required String dateFrom,
+    required String dateTo,
+  }) async {
+    final db = await instance.database;
+    return await db.rawQuery(
+      "SELECT reason, SUM(amount) as total, COUNT(*) as count "
+      "FROM debts WHERE date >= ? AND date <= ? AND reason IS NOT NULL AND reason != '' "
+      "GROUP BY reason ORDER BY total DESC",
+      [dateFrom, dateTo],
+    );
   }
 }

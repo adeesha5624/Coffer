@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'database_helper.dart';
 import 'add_transaction_screen.dart';
@@ -7,6 +9,8 @@ import 'account_details_screen.dart';
 import 'add_account_screen.dart';
 import 'net_worth_details_screen.dart';
 import 'reports_screen.dart';
+import 'pin_helper.dart';
+import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final Function(bool) onThemeChanged;
@@ -169,6 +173,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Colors.cyanAccent;
   }
 
+  // 🔓 Logout Confirmation Dialog
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
+            SizedBox(width: 10),
+            Text("Logout", style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          "ඔයා logout වෙන්න කැමතිද?\n\nPIN keep කරොත් next time PIN එකෙන් ඉක්මනට login වෙන්න පුළුවන්.",
+          style: TextStyle(color: Colors.white60, height: 1.5),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          // Cancel
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel",
+                style: TextStyle(color: Colors.white38)),
+          ),
+          // Logout & Clear PIN
+          OutlinedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _performLogout(clearPin: true);
+            },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.redAccent),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text("Clear PIN & Logout",
+                style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+          ),
+          // Logout (keep PIN)
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _performLogout(clearPin: false);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text("Logout",
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔓 Logout Logic
+  Future<void> _performLogout({required bool clearPin}) async {
+    try {
+      // PIN clear කරන්න ඕනේ නම්
+      if (clearPin) {
+        await PinHelper.clearPin();
+      }
+
+      // Firebase Sign Out
+      await FirebaseAuth.instance.signOut();
+
+      // Close local database to reset for next user
+      await DatabaseHelper.instance.closeDatabase();
+
+      // Google Sign Out (if signed in via Google)
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (_) {
+        // Google sign-in නොකළ නම් ignore කරනවා
+      }
+
+      if (!mounted) return;
+
+      // Login Screen එකට navigate කරනවා
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(
+            onThemeChanged: widget.onThemeChanged,
+            isDarkMode: widget.isDarkMode,
+          ),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Logout Error: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Color textColor = Theme.of(context).brightness == Brightness.dark
@@ -198,6 +307,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
               color: widget.isDarkMode ? Colors.orangeAccent : Colors.blueGrey,
             ),
+          ),
+          // 🔓 Logout Button
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            tooltip: "Logout",
+            onPressed: () => _showLogoutDialog(),
           ),
         ],
       ),

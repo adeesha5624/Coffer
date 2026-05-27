@@ -3,8 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
-import 'dashboard_screen.dart';
 import 'login_screen.dart';
+import 'pin_screen.dart';
+import 'pin_helper.dart';
 
 void main() async {
   // 💡 Flutter Engine එක සහ Firebase මුලින්ම සක්‍රිය (Initialize) කිරීම
@@ -73,9 +74,10 @@ class _MyAppState extends State<MyApp> {
             );
           }
 
-          // 💡 යූසර් දැනටමත් ලොග් වෙලා ඉන්නවා නම් කෙළින්ම Dashboard එකට යනවා
+          // 💡 යූසර් දැනටමත් ලොග් වෙලා ඉන්නවා නම්
           if (snapshot.hasData) {
-            return DashboardScreen(
+            // PIN check කරනවා — PIN තියෙනවා නම් PIN screen, නැත්නම් PIN setup
+            return _PinCheckWrapper(
               onThemeChanged: _updateTheme,
               isDarkMode: _isDarkMode,
             );
@@ -89,5 +91,79 @@ class _MyAppState extends State<MyApp> {
         },
       ),
     );
+  }
+}
+
+/// 🔐 PIN check wrapper — logged-in user ගේ PIN status check කරලා
+/// correct screen එකට navigate කරනවා
+class _PinCheckWrapper extends StatefulWidget {
+  final Function(bool) onThemeChanged;
+  final bool isDarkMode;
+
+  const _PinCheckWrapper({
+    required this.onThemeChanged,
+    required this.isDarkMode,
+  });
+
+  @override
+  State<_PinCheckWrapper> createState() => _PinCheckWrapperState();
+}
+
+class _PinCheckWrapperState extends State<_PinCheckWrapper> {
+  bool _isLoading = true;
+  bool _hasPin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPin();
+  }
+
+  Future<void> _checkPin() async {
+    final hasPin = await PinHelper.hasPin();
+    if (mounted) {
+      setState(() {
+        _hasPin = hasPin;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _handleForgotPin() async {
+    // PIN clear කරලා Firebase sign out කරනවා — Login Screen එකට යනවා
+    await PinHelper.clearPin();
+    await FirebaseAuth.instance.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF020617),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.cyanAccent),
+        ),
+      );
+    }
+
+    if (_hasPin) {
+      // PIN තියෙනවා → PIN Login Screen පෙන්වනවා
+      return PinScreen(
+        mode: PinMode.login,
+        onThemeChanged: widget.onThemeChanged,
+        isDarkMode: widget.isDarkMode,
+        onForgotPin: _handleForgotPin,
+      );
+    } else {
+      // PIN නැ → PIN Setup Screen පෙන්වනවා
+      return PinScreen(
+        mode: PinMode.setup,
+        onThemeChanged: widget.onThemeChanged,
+        isDarkMode: widget.isDarkMode,
+      );
+    }
   }
 }
