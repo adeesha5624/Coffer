@@ -166,23 +166,37 @@ class _ReportsScreenState extends State<ReportsScreen> {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 // Report Header
-                pw.Text("UNIVERSAL WALLET - TRANSACTION REPORT",
-                    style: pw.TextStyle(
-                        fontSize: 20,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.blue900)),
+                pw.Text(
+                  "UNIVERSAL WALLET - TRANSACTION REPORT",
+                  style: pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.blue900,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
                 pw.Text(
-                    "Generated: ${DateTime.now().toString().split(' ').first}",
-                    style: const pw.TextStyle(
-                        color: PdfColors.grey700, fontSize: 11)),
-                pw.Text("Period: $dateRange",
-                    style: const pw.TextStyle(
-                        color: PdfColors.grey700, fontSize: 11)),
+                  "Generated: ${DateTime.now().toString().split(' ').first}",
+                  style: const pw.TextStyle(
+                    color: PdfColors.grey700,
+                    fontSize: 11,
+                  ),
+                ),
+                pw.Text(
+                  "Period: $dateRange",
+                  style: const pw.TextStyle(
+                    color: PdfColors.grey700,
+                    fontSize: 11,
+                  ),
+                ),
                 if (_currentQuery.isNotEmpty)
-                  pw.Text("Search: \"$_currentQuery\"",
-                      style: const pw.TextStyle(
-                          color: PdfColors.blue800, fontSize: 11)),
+                  pw.Text(
+                    "Search: \"$_currentQuery\"",
+                    style: const pw.TextStyle(
+                      color: PdfColors.blue800,
+                      fontSize: 11,
+                    ),
+                  ),
                 pw.Divider(thickness: 1.5, color: PdfColors.blue900),
                 pw.SizedBox(height: 15),
 
@@ -190,40 +204,52 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 pw.Container(
                   padding: const pw.EdgeInsets.all(15),
                   decoration: pw.BoxDecoration(
-                      color: PdfColors.grey200,
-                      borderRadius: pw.BorderRadius.circular(10)),
+                    color: PdfColors.grey200,
+                    borderRadius: pw.BorderRadius.circular(10),
+                  ),
                   child: pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text("Total Given: Rs. ${_totalGiven.toStringAsFixed(2)}",
-                              style: pw.TextStyle(
-                                  fontSize: 11,
-                                  color: PdfColors.red800,
-                                  fontWeight: pw.FontWeight.bold)),
-                          pw.Text("Total Taken: Rs. ${_totalTaken.toStringAsFixed(2)}",
-                              style: pw.TextStyle(
-                                  fontSize: 11,
-                                  color: PdfColors.green800,
-                                  fontWeight: pw.FontWeight.bold)),
+                          pw.Text(
+                            "Total Given: Rs. ${_totalGiven.toStringAsFixed(2)}",
+                            style: pw.TextStyle(
+                              fontSize: 11,
+                              color: PdfColors.red800,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            "Total Taken: Rs. ${_totalTaken.toStringAsFixed(2)}",
+                            style: pw.TextStyle(
+                              fontSize: 11,
+                              color: PdfColors.green800,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                       pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.end,
                         children: [
-                          pw.Text("Net Balance:",
-                              style: const pw.TextStyle(
-                                  fontSize: 12, color: PdfColors.grey700)),
+                          pw.Text(
+                            "Net Balance:",
+                            style: const pw.TextStyle(
+                              fontSize: 12,
+                              color: PdfColors.grey700,
+                            ),
+                          ),
                           pw.Text(
                             "${_netBalance >= 0 ? '+' : ''} Rs. ${_netBalance.toStringAsFixed(2)}",
                             style: pw.TextStyle(
-                                fontSize: 18,
-                                fontWeight: pw.FontWeight.bold,
-                                color: _netBalance >= 0
-                                    ? PdfColors.green800
-                                    : PdfColors.red800),
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                              color: _netBalance >= 0
+                                  ? PdfColors.green800
+                                  : PdfColors.red800,
+                            ),
                           ),
                         ],
                       ),
@@ -233,19 +259,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 pw.SizedBox(height: 20),
 
                 pw.Text(
-                    "Transactions ($_totalCount records)",
-                    style: pw.TextStyle(
-                        fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  "Transactions ($_totalCount records)",
+                  style: pw.TextStyle(
+                    fontSize: 14,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 10),
 
                 // Table
                 pw.Table(
-                  border:
-                      pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
+                  border: pw.TableBorder.all(
+                    color: PdfColors.grey400,
+                    width: 0.5,
+                  ),
                   children: [
                     pw.TableRow(
-                      decoration:
-                          const pw.BoxDecoration(color: PdfColors.blue900),
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.blue900,
+                      ),
                       children: [
                         _pdfHeader("Date"),
                         _pdfHeader("Name"),
@@ -264,15 +296,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           _pdfCell(isTake ? "Taken" : "Given"),
                           _pdfCell(row['reason'] ?? '-'),
                           pw.Padding(
-                              padding: const pw.EdgeInsets.all(8),
-                              child: pw.Text(
-                                  "${isTake ? '+' : '-'} ${amt.toStringAsFixed(0)}",
-                                  style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold,
-                                      color: isTake
-                                          ? PdfColors.green800
-                                          : PdfColors.red800,
-                                      fontSize: 10))),
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(
+                              "${isTake ? '+' : '-'} ${amt.toStringAsFixed(0)}",
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                color: isTake
+                                    ? PdfColors.green800
+                                    : PdfColors.red800,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
                         ],
                       );
                     }),
@@ -282,9 +317,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 pw.Spacer(),
                 pw.Divider(color: PdfColors.grey300),
                 pw.Center(
-                    child: pw.Text("Thank you for using Universal Wallet App",
-                        style: const pw.TextStyle(
-                            fontSize: 10, color: PdfColors.grey500))),
+                  child: pw.Text(
+                    "Thank you for using Universal Wallet App",
+                    style: const pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey500,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -307,18 +347,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   pw.Widget _pdfHeader(String text) {
     return pw.Padding(
-        padding: const pw.EdgeInsets.all(8),
-        child: pw.Text(text,
-            style: pw.TextStyle(
-                color: PdfColors.white,
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 11)));
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(
+          color: PdfColors.white,
+          fontWeight: pw.FontWeight.bold,
+          fontSize: 11,
+        ),
+      ),
+    );
   }
 
   pw.Widget _pdfCell(String text) {
     return pw.Padding(
-        padding: const pw.EdgeInsets.all(8),
-        child: pw.Text(text, style: const pw.TextStyle(fontSize: 10)));
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Text(text, style: const pw.TextStyle(fontSize: 10)),
+    );
   }
 
   @override
@@ -326,8 +371,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF020617),
       appBar: AppBar(
-        title: const Text("Universal Reports",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Universal Reports",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -344,19 +391,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     controller: _searchController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.manage_search,
-                          color: Colors.cyanAccent),
-                      hintText: "Search Name, Food, Transport...",
+                      prefixIcon: const Icon(
+                        Icons.manage_search,
+                        color: Colors.cyanAccent,
+                      ),
+                      hintText: "Search Friend Name...",
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
                       suffixIcon: _currentQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.close,
-                                  color: Colors.white38, size: 18),
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white38,
+                                size: 18,
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() {
@@ -383,8 +436,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       color: Colors.cyanAccent,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: const Icon(Icons.search_rounded,
-                        color: Colors.black, size: 24),
+                    child: const Icon(
+                      Icons.search_rounded,
+                      color: Colors.black,
+                      size: 24,
+                    ),
                   ),
                 ),
               ],
@@ -401,24 +457,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     onTap: () => _pickDate(isFrom: true),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: Colors.cyanAccent.withValues(alpha: 0.2)),
+                          color: Colors.cyanAccent.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today,
-                              color: Colors.cyanAccent, size: 14),
+                          const Icon(
+                            Icons.calendar_today,
+                            color: Colors.cyanAccent,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateFrom),
                             style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600),
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -427,8 +490,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(Icons.arrow_forward,
-                      color: Colors.white24, size: 16),
+                  child: Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white24,
+                    size: 16,
+                  ),
                 ),
                 // To date
                 Expanded(
@@ -436,24 +502,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     onTap: () => _pickDate(isFrom: false),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: Colors.cyanAccent.withValues(alpha: 0.2)),
+                          color: Colors.cyanAccent.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today,
-                              color: Colors.cyanAccent, size: 14),
+                          const Icon(
+                            Icons.calendar_today,
+                            color: Colors.cyanAccent,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateTo),
                             style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600),
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -490,8 +563,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         child: Text(
                           period,
                           style: TextStyle(
-                            color:
-                                isSelected ? Colors.cyanAccent : Colors.white38,
+                            color: isSelected
+                                ? Colors.cyanAccent
+                                : Colors.white38,
                             fontSize: 11,
                             fontWeight: isSelected
                                 ? FontWeight.bold
@@ -511,23 +585,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
             _isLoading
                 ? const Expanded(
                     child: Center(
-                        child: CircularProgressIndicator(
-                            color: Colors.cyanAccent)))
+                      child: CircularProgressIndicator(
+                        color: Colors.cyanAccent,
+                      ),
+                    ),
+                  )
                 : Expanded(
                     child: _searchResults.isEmpty
                         ? Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.search_rounded,
-                                    color: Colors.white.withValues(alpha: 0.08),
-                                    size: 80),
+                                Icon(
+                                  Icons.search_rounded,
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  size: 80,
+                                ),
                                 const SizedBox(height: 15),
                                 const Text(
-                                  "Search by Name, Reason or Category\nwith date filters to view reports",
+                                  "Search by Friend Name\nwith date filters to view reports",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.white24, height: 1.5),
+                                    color: Colors.white24,
+                                    height: 1.5,
+                                  ),
                                 ),
                               ],
                             ),
@@ -541,23 +622,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   gradient: LinearGradient(
                                     colors: [
                                       const Color(0xFF1E293B),
-                                      const Color(0xFF1E293B)
-                                          .withValues(alpha: 0.8),
+                                      const Color(
+                                        0xFF1E293B,
+                                      ).withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
-                                      color: Colors.cyanAccent
-                                          .withValues(alpha: 0.15)),
+                                    color: Colors.cyanAccent.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
                                 ),
                                 child: Column(
                                   children: [
                                     // Header
                                     Row(
                                       children: [
-                                        const Icon(Icons.analytics_rounded,
-                                            color: Colors.cyanAccent,
-                                            size: 18),
+                                        const Icon(
+                                          Icons.analytics_rounded,
+                                          color: Colors.cyanAccent,
+                                          size: 18,
+                                        ),
                                         const SizedBox(width: 8),
                                         Text(
                                           _currentQuery.isNotEmpty
@@ -572,12 +658,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                         const Spacer(),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 3),
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: Colors.cyanAccent
-                                                .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            color: Colors.cyanAccent.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: Text(
                                             "$_totalCount records",
@@ -637,34 +727,34 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   itemBuilder: (context, index) {
                                     final row = _searchResults[index];
                                     bool isTake = row['type'] == 'Take';
-                                    double amt =
-                                        (row['amount'] as num).toDouble();
+                                    double amt = (row['amount'] as num)
+                                        .toDouble();
                                     String dateStr = row['date'] ?? '';
 
                                     return Container(
-                                      margin:
-                                          const EdgeInsets.only(bottom: 8),
+                                      margin: const EdgeInsets.only(bottom: 8),
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF0F172A),
-                                        borderRadius:
-                                            BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(14),
                                         border: Border.all(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.04)),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.04,
+                                          ),
+                                        ),
                                       ),
                                       child: Row(
                                         children: [
                                           // Icon
                                           Container(
-                                            padding:
-                                                const EdgeInsets.all(8),
+                                            padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
                                               color: isTake
                                                   ? Colors.greenAccent
-                                                      .withValues(alpha: 0.1)
-                                                  : Colors.redAccent
-                                                      .withValues(alpha: 0.1),
+                                                        .withValues(alpha: 0.1)
+                                                  : Colors.redAccent.withValues(
+                                                      alpha: 0.1,
+                                                    ),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
@@ -690,8 +780,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                   "${row['person_name']}",
                                                   style: const TextStyle(
                                                     color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.bold,
+                                                    fontWeight: FontWeight.bold,
                                                     fontSize: 14,
                                                   ),
                                                 ),
@@ -701,66 +790,59 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                     // Date chip
                                                     Container(
                                                       padding:
-                                                          const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2),
-                                                      decoration:
-                                                          BoxDecoration(
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
                                                         color: Colors.white
                                                             .withValues(
-                                                                alpha: 0.05),
+                                                              alpha: 0.05,
+                                                            ),
                                                         borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    5),
+                                                            BorderRadius.circular(
+                                                              5,
+                                                            ),
                                                       ),
                                                       child: Text(
                                                         dateStr.split(' ')[0],
-                                                        style:
-                                                            const TextStyle(
-                                                          color:
-                                                              Colors.white38,
+                                                        style: const TextStyle(
+                                                          color: Colors.white38,
                                                           fontSize: 10,
                                                         ),
                                                       ),
                                                     ),
-                                                    if (row['reason'] !=
-                                                            null &&
+                                                    if (row['reason'] != null &&
                                                         row['reason']
                                                             .toString()
                                                             .isNotEmpty) ...[
-                                                      const SizedBox(
-                                                          width: 6),
+                                                      const SizedBox(width: 6),
                                                       // Reason chip
                                                       Container(
                                                         padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal:
-                                                                    6,
-                                                                vertical:
-                                                                    2),
-                                                        decoration:
-                                                            BoxDecoration(
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
                                                           color: Colors
                                                               .cyanAccent
                                                               .withValues(
-                                                                  alpha:
-                                                                      0.08),
+                                                                alpha: 0.08,
+                                                              ),
                                                           borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      5),
+                                                              BorderRadius.circular(
+                                                                5,
+                                                              ),
                                                         ),
                                                         child: Text(
                                                           row['reason'],
                                                           style:
                                                               const TextStyle(
-                                                            color: Colors
-                                                                .cyanAccent,
-                                                            fontSize: 10,
-                                                          ),
+                                                                color: Colors
+                                                                    .cyanAccent,
+                                                                fontSize: 10,
+                                                              ),
                                                         ),
                                                       ),
                                                     ],
@@ -797,15 +879,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: _generatePDFReport,
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.cyanAccent,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15))),
+                                    backgroundColor: Colors.cyanAccent,
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
                                   icon: const Icon(Icons.picture_as_pdf),
-                                  label: const Text("Download PDF Statement",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
+                                  label: const Text(
+                                    "Download PDF Statement",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -819,7 +905,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   // 📊 Analytics stat item widget
   Widget _buildStatItem(
-      String label, String value, Color color, IconData icon) {
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(10),

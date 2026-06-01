@@ -217,9 +217,8 @@ class DatabaseHelper {
       String searchQuery = '%${query.trim()}%';
       return await db.query(
         'debts',
-        where:
-            '(person_name LIKE ? OR reason LIKE ?) AND date >= ? AND date <= ?',
-        whereArgs: [searchQuery, searchQuery, dateFrom, dateTo],
+        where: 'person_name LIKE ? AND date >= ? AND date <= ?',
+        whereArgs: [searchQuery, dateFrom, dateTo],
         orderBy: 'date DESC',
       );
     } else {

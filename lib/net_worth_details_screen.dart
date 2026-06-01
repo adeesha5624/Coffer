@@ -29,14 +29,105 @@ class _GlobalRecord {
 
 class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
   List<_GlobalRecord> _allRecords = [];
+  List<_GlobalRecord> _displayedRecords = [];
   bool _isLoading = true;
   late double _currentNetWorth;
+
+  final _searchController = TextEditingController();
+  String _currentQuery = "";
+
+  // Date Range
+  DateTime _dateFrom = DateTime(2000);
+  DateTime _dateTo = DateTime.now();
+  String _selectedPeriod = 'All';
 
   @override
   void initState() {
     super.initState();
     _currentNetWorth = widget.totalNetWorth;
+    _setDatePeriod('All');
+  }
+
+  void _setDatePeriod(String period) {
+    final now = DateTime.now();
+    setState(() {
+      _selectedPeriod = period;
+      switch (period) {
+        case 'Today':
+          _dateFrom = DateTime(now.year, now.month, now.day);
+          _dateTo = now;
+          break;
+        case 'Week':
+          _dateFrom = now.subtract(Duration(days: now.weekday - 1));
+          _dateTo = now;
+          break;
+        case 'Month':
+          _dateFrom = DateTime(now.year, now.month, 1);
+          _dateTo = now;
+          break;
+        case 'All':
+          _dateFrom = DateTime(2000);
+          _dateTo = now;
+          break;
+      }
+    });
     _loadAllWalletRecords();
+  }
+
+  Future<void> _pickDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(start: _dateFrom, end: _dateTo),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.cyanAccent,
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E293B),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _dateFrom = picked.start;
+        _dateTo = picked.end;
+        _selectedPeriod = 'Custom';
+      });
+      _loadAllWalletRecords();
+    }
+  }
+
+  void _filterRecords() {
+    setState(() {
+      _currentQuery = _searchController.text.trim().toLowerCase();
+      _displayedRecords = _allRecords.where((rec) {
+        DateTime recDate;
+        try {
+          recDate = DateTime.parse(rec.date);
+        } catch (e) {
+          recDate = DateTime.now();
+        }
+        
+        bool isAfterFrom = recDate.isAfter(_dateFrom.subtract(const Duration(days: 1)));
+        bool isBeforeTo = recDate.isBefore(_dateTo.add(const Duration(days: 1)));
+        bool dateMatch = isAfterFrom && isBeforeTo;
+
+        bool textMatch = true;
+        if (_currentQuery.isNotEmpty) {
+          textMatch = rec.title.toLowerCase().contains(_currentQuery) ||
+                      rec.subtitle.toLowerCase().contains(_currentQuery);
+        }
+
+        return dateMatch && textMatch;
+      }).toList();
+    });
   }
 
   Future<void> _loadAllWalletRecords() async {
@@ -92,6 +183,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
       _currentNetWorth = netWorth;
       _isLoading = false;
     });
+    _filterRecords();
   }
 
   // Reverse balance and delete the record
@@ -187,6 +279,85 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                   ),
                 ),
 
+                // 🔍 Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) => _filterRecords(),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Colors.cyanAccent),
+                      hintText: "Search Food, Reason, Category...",
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      suffixIcon: _currentQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.white54),
+                              onPressed: () {
+                                _searchController.clear();
+                                _filterRecords();
+                              },
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+
+                // 📅 Date Filters
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Row(
+                    children: ['Today', 'Week', 'Month', 'All'].map((period) {
+                      bool isSelected = _selectedPeriod == period;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ChoiceChip(
+                          label: Text(period),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) _setDatePeriod(period);
+                          },
+                          backgroundColor: const Color(0xFF1E293B),
+                          selectedColor: Colors.cyanAccent.withValues(alpha: 0.2),
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.cyanAccent : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: isSelected ? Colors.cyanAccent : Colors.white10,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList()
+                      ..add(
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ActionChip(
+                            label: const Text('Custom'),
+                            avatar: const Icon(Icons.date_range, size: 16, color: Colors.white70),
+                            backgroundColor: const Color(0xFF1E293B),
+                            labelStyle: const TextStyle(color: Colors.white70),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: const BorderSide(color: Colors.white10),
+                            ),
+                            onPressed: () => _pickDateRange(),
+                          ),
+                        ),
+                      ),
+                  ),
+                ),
+
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   child: Align(
@@ -201,15 +372,15 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
 
                 // History List
                 Expanded(
-                  child: _allRecords.isEmpty
+                  child: _displayedRecords.isEmpty
                       ? const Center(
                           child: Text("No statement records found",
                               style: TextStyle(color: Colors.white24)))
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _allRecords.length,
+                          itemCount: _displayedRecords.length,
                           itemBuilder: (context, index) {
-                            final rec = _allRecords[index];
+                            final rec = _displayedRecords[index];
 
                             bool isPlus = rec.type == 'Income' ||
                                 (rec.type == 'Debt' &&
