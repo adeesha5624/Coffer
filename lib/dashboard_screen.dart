@@ -302,10 +302,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           ),
           IconButton(
-            onPressed: () => widget.onThemeChanged(!widget.isDarkMode),
+            onPressed: () {
+              bool isDark = Theme.of(context).brightness == Brightness.dark;
+              widget.onThemeChanged(!isDark);
+            },
             icon: Icon(
-              widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: widget.isDarkMode ? Colors.orangeAccent : Colors.blueGrey,
+              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.orangeAccent : Colors.blueGrey,
             ),
           ),
           // 🔓 Logout Button
