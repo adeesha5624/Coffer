@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'database_helper.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -62,10 +62,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
     });
 
-    // Auto search if there's already a query
-    if (_currentQuery.isNotEmpty || _searchResults.isNotEmpty) {
-      _handleSearch();
-    }
+    // 🔄 Always refresh search when period changes so it loads data initially
+    _handleSearch();
   }
 
   // 📅 Date Picker
@@ -99,9 +97,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         _selectedPeriod = 'Custom';
       });
 
-      if (_currentQuery.isNotEmpty || _searchResults.isNotEmpty) {
-        _handleSearch();
-      }
+      // 🔄 Refresh data when custom date is picked
+      _handleSearch();
     }
   }
 
@@ -333,13 +330,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
 
     try {
-      final output = await getTemporaryDirectory();
       final fileName = _currentQuery.isNotEmpty
           ? "Report_${_currentQuery}_${DateFormat('yyyyMMdd').format(_dateFrom)}"
           : "Report_${DateFormat('yyyyMMdd').format(_dateFrom)}_${DateFormat('yyyyMMdd').format(_dateTo)}";
-      final file = File("${output.path}/$fileName.pdf");
-      await file.writeAsBytes(await pdf.save());
-      await OpenFile.open(file.path);
+      
+      // 🌐 Use printing package to safely share/download PDF on Web, iOS, and Android
+      await Printing.sharePdf(bytes: await pdf.save(), filename: "$fileName.pdf");
     } catch (e) {
       debugPrint("PDF Generation Error: $e");
     }

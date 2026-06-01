@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'pin_screen.dart';
@@ -56,49 +57,49 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ✅ Google Sign-In — updated for google_sign_in v7
+  // ✅ Google Sign-In — platform aware
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
 
     try {
-      // v7: Use singleton instance + authenticate()
-      final GoogleSignInAccount googleUser =
-          await GoogleSignIn.instance.authenticate();
+      if (kIsWeb) {
+        // Web: Use Firebase Auth popup directly (bypasses GIS renderButton requirement)
+        final provider = GoogleAuthProvider();
+        await FirebaseAuth.instance.signInWithPopup(provider);
+        await _onLoginSuccess();
+      } else {
+        // Mobile: Use Google Sign In plugin v7 API
+        final GoogleSignInAccount googleUser = await GoogleSignIn.instance
+            .authenticate();
 
-      // v7: Get idToken from authentication
-      final String? idToken = googleUser.authentication.idToken;
+        final String? idToken = googleUser.authentication.idToken;
 
-      // v7: Request scopes to get accessToken via authorizationClient
-      final GoogleSignInClientAuthorization authorization =
-          await googleUser.authorizationClient.authorizeScopes([
-        'email',
-        'profile',
-      ]);
+        final GoogleSignInClientAuthorization authorization = await googleUser
+            .authorizationClient
+            .authorizeScopes(['email', 'profile']);
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: authorization.accessToken,
-        idToken: idToken,
-      );
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: authorization.accessToken,
+          idToken: idToken,
+        );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      await _onLoginSuccess();
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        await _onLoginSuccess();
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Firebase Error: ${e.message}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Firebase Error: ${e.message}")));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In Error: $e")));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -140,41 +141,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
-
-
                 // ================= GOOGLE LOGIN =================
                 SizedBox(
-                        width: double.infinity,
-                        height: 52,
+                  width: double.infinity,
+                  height: 52,
 
-                        child: OutlinedButton.icon(
-                          onPressed: _isLoading ? null : _signInWithGoogle,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _signInWithGoogle,
 
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.white24),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white24),
 
-                            foregroundColor: Colors.white,
+                      foregroundColor: Colors.white,
 
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-
-                          icon: const Icon(
-                            Icons.g_mobiledata,
-                            size: 30,
-                            color: Colors.white,
-                          ),
-
-                          label: const Text(
-                            "Continue with Google",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
+                    ),
+
+                    icon: const Icon(
+                      Icons.g_mobiledata,
+                      size: 30,
+                      color: Colors.white,
+                    ),
+
+                    label: const Text(
+                      "Continue with Google",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 40),
 

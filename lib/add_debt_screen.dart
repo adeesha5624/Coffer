@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 import 'database_helper.dart';
 
 class AddDebtScreen extends StatefulWidget {
-  const AddDebtScreen({super.key});
+  final String initialType;
+  const AddDebtScreen({super.key, this.initialType = 'Give'});
 
   @override
   State<AddDebtScreen> createState() => _AddDebtScreenState();
@@ -14,7 +15,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final _amountController = TextEditingController();
   final _reasonController = TextEditingController();
 
-  String _debtType = 'Give';
+  late String _debtType;
   DateTime _selectedDate = DateTime.now();
 
   // Dynamic Accounts Variables
@@ -25,6 +26,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   @override
   void initState() {
     super.initState();
+    _debtType = widget.initialType;
     _loadDatabaseAccounts();
   }
 

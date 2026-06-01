@@ -10,11 +10,12 @@ import 'pin_helper.dart';
 void main() async {
   // 💡 Flutter Engine එක සහ Firebase මුලින්ම සක්‍රිය (Initialize) කිරීම
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // google_sign_in v7 requires explicit initialization
-  await GoogleSignIn.instance.initialize();
+  await GoogleSignIn.instance.initialize(
+    clientId:
+        '4685339162-4mgf6f1oj2ukvanapee2o9f62fst8p1u.apps.googleusercontent.com',
+  );
   runApp(const MyApp());
 }
 

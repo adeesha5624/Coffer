@@ -274,7 +274,9 @@ class _DebtListScreenState extends State<DebtListScreen> {
         onPressed: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddDebtScreen()),
+            MaterialPageRoute(
+              builder: (context) => AddDebtScreen(initialType: widget.initialType),
+            ),
           );
           _refreshDebts();
         },

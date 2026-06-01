@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -20,10 +22,16 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    if (kIsWeb) {
+      // 🌐 Web platform database initialization
+      databaseFactory = databaseFactoryFfiWeb;
+      return await openDatabase(filePath, version: 1, onCreate: _onCreate);
+    } else {
+      // 📱 Mobile platform database initialization
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, filePath);
+      return await openDatabase(path, version: 1, onCreate: _onCreate);
+    }
   }
 
   // 💡 Reset/Close the database connection (called on logout)
