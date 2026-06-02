@@ -211,7 +211,7 @@ class _PinScreenState extends State<PinScreen>
     final isSetup = widget.mode == PinMode.setup;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -360,7 +360,7 @@ class _PinScreenState extends State<PinScreen>
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      backgroundColor: const Color(0xFF1E293B),
+                      backgroundColor: Theme.of(context).cardColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),

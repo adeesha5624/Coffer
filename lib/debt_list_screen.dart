@@ -92,7 +92,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
@@ -143,9 +143,17 @@ class _DebtListScreenState extends State<DebtListScreen> {
                 prefixText: "Rs. ",
                 prefixStyle: const TextStyle(color: Colors.white70),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
-                ),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
               ),
             ),
             const SizedBox(height: 30),
@@ -182,7 +190,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           widget.initialType == 'Give' ? "Money to Collect" : "Money to Pay",
@@ -280,7 +288,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
           );
           _refreshDebts();
         },
-        backgroundColor: Colors.cyanAccent,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.black, size: 28),
       ),
     );

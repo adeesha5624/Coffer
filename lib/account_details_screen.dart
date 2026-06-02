@@ -108,22 +108,22 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text("Rename Account",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Theme.of(context).cardColor,
+        title: Text("Rename Account",
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: nameController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
               hintText: "New name...",
-              hintStyle: TextStyle(color: Colors.white24)),
+              hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.24))),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel")),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyanAccent),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor),
             onPressed: () async {
               String newName = nameController.text.trim();
               if (newName.isNotEmpty) {
@@ -146,7 +146,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).cardColor,
         title: const Text("Delete Account?"),
         content: const Text("Are you sure you want to delete this account?"),
         actions: [
@@ -171,13 +171,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(_currentAccountName,
-            style: const TextStyle(color: Colors.white)),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        
         actions: [
           IconButton(
               icon: const Icon(Icons.edit_note,
@@ -194,9 +194,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: Colors.cyanAccent))
           : _combinedList.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text("No records found for this account",
-                      style: TextStyle(color: Colors.white24)))
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.24))))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: _combinedList.length,
@@ -222,15 +222,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                   : Colors.redAccent),
                         ),
                         title: Text(item.category,
-                            style: const TextStyle(
-                                color: Colors.white,
+                            style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(item.date,
-                                style: const TextStyle(
-                                    color: Colors.white38, fontSize: 11)),
+                                style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38), fontSize: 11)),
                             if (item.subInfo.isNotEmpty)
                               Text(item.subInfo,
                                   style: const TextStyle(

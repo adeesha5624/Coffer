@@ -58,10 +58,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.cyanAccent,
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
               onPrimary: Colors.black,
+              surface: Theme.of(context).cardColor,
+              onSurface: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           child: child!,
@@ -122,18 +124,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Add Debt / Loan",
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        
       ),
       body: _isLoadingAccounts
           ? const Center(
@@ -225,20 +227,20 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: _accountsList.isEmpty
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(12),
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(12),
                                       child: Text(
                                         "No Accounts",
-                                        style: TextStyle(color: Colors.white54),
+                                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5)),
                                       ),
                                     )
                                   : DropdownButtonHideUnderline(
                                       child: DropdownButton<int>(
                                         value: _selectedAccountId,
-                                        dropdownColor: const Color(0xFF1E293B),
+                                        dropdownColor: Theme.of(context).cardColor,
                                         isExpanded: true,
-                                        style: const TextStyle(
-                                            color: Colors.white),
+                                        style: TextStyle(
+                                            color: Theme.of(context).textTheme.bodyLarge?.color),
                                         items: _accountsList.map((acc) {
                                           return DropdownMenuItem<int>(
                                             value: acc['id'] as int,
@@ -287,8 +289,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                                     Text(
                                       DateFormat('MMM dd')
                                           .format(_selectedDate),
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -340,8 +342,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       padding: const EdgeInsets.only(bottom: 8, left: 4),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white70,
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
           fontSize: 13,
         ),
       ),
@@ -383,16 +385,24 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     return TextField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.cyanAccent, size: 20),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38),
+        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38)),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: Theme.of(context).cardColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
         ),
       ),
     );

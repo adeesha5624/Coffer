@@ -145,7 +145,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.cyanAccent
+                            ? (Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent)
                             : Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -153,7 +153,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Text(
                           type,
                           style: TextStyle(
-                            color: isSelected ? Colors.black : Colors.white60,
+                            color: isSelected ? Colors.black : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -168,8 +168,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             const SizedBox(height: 25),
 
             // --- 2. AMOUNT INPUT ---
-            const Text("Amount (Rs.)",
-                style: TextStyle(color: Colors.white54, fontSize: 13)),
+            Text("Amount (Rs.)",
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
             const SizedBox(height: 8),
             TextField(
               controller: _amountController,
@@ -179,8 +179,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
                 hintText: "0.00",
               ),
             ),
@@ -198,8 +207,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
             // --- 4. 💡 TO ACCOUNT DROPDOWN (Transfer එකක් නම් විතරක් පෙනේ) ---
             if (_selectedType == 'Transfer') ...[
-              const Text("To Account",
-                  style: TextStyle(color: Colors.white54, fontSize: 13)),
+              Text("To Account",
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
               const SizedBox(height: 8),
               _buildAccountDropdown(_selectedToAccountId, (val) {
                 setState(() => _selectedToAccountId = val);
@@ -209,18 +218,27 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
             // --- 5. CATEGORY DROPDOWN (Transfer වලට ඕන නෑ) ---
             if (_selectedType != 'Transfer') ...[
-              const Text("Category",
-                  style: TextStyle(color: Colors.white54, fontSize: 13)),
+              Text("Category",
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
-                dropdownColor: const Color(0xFF1E293B),
+                dropdownColor: Theme.of(context).cardColor,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
                 ),
                 items: (_selectedType == 'Income'
                         ? _incomeCategories
@@ -235,8 +253,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
             // --- 6. DESCRIPTION ---
             if (_selectedType != 'Transfer') ...[
-              const Text("Description (Optional)",
-                  style: TextStyle(color: Colors.white54, fontSize: 13)),
+              Text("Description (Optional)",
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
               const SizedBox(height: 8),
               TextField(
                 controller: _descriptionController,
@@ -244,8 +262,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   filled: true,
                   fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
                   hintText: "Notes...",
                 ),
               ),
@@ -259,8 +286,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               child: ElevatedButton(
                 onPressed: _saveTransaction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyanAccent,
-                  foregroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
+                  foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
@@ -279,15 +306,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget _buildAccountDropdown(int? currentValue, Function(int?) onChanged) {
     return DropdownButtonFormField<int>(
       initialValue: currentValue,
-      dropdownColor: const Color(0xFF1E293B),
+      dropdownColor: Theme.of(context).cardColor,
       hint:
-          const Text("Select Account", style: TextStyle(color: Colors.white30)),
+          Text("Select Account", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3))),
       decoration: InputDecoration(
         filled: true,
         fillColor: Theme.of(context).cardColor,
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
       ),
       items: _accounts.map((acc) {
         return DropdownMenuItem<int>(

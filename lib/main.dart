@@ -43,12 +43,39 @@ class _MyAppState extends State<MyApp> {
       title: 'Universal Wallet',
       debugShowCheckedModeBanner: false,
 
-      // ⚪ Light Theme සැකසුම්
+      // ⚪ Light Theme සැකසුම් (Beautiful Modern Light Mode)
       theme: ThemeData(
         brightness: Brightness.light,
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        primaryColor: const Color(0xFF2563EB), // Vibrant Blue
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC), // Slate 50
         cardColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFF8FAFC),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFF0F172A)), // Slate 900
+          titleTextStyle: TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF1E293B)), // Slate 800
+          bodyMedium: TextStyle(color: Color(0xFF334155)), // Slate 700
+          titleLarge: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF2563EB)),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF2563EB),
+          secondary: Color(0xFF0891B2), // Cyan 600
+          surface: Colors.white,
+          onSurface: Color(0xFF0F172A),
+          background: Color(0xFFF8FAFC),
+          onBackground: Color(0xFF0F172A),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
       ),
 
       // ⚫ Dark Theme සැකසුම් (ඔයාගේ UI එකේ තියෙන පට්ටම ලස්සන ඩාර්ක් කලර්ස් ටික)
@@ -67,10 +94,10 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot) {
           // Firebase එකෙන් ලොගින් විස්තර චෙක් කරනකම් ලෝඩින් එකක් පෙන්වනවා
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              backgroundColor: Color(0xFF020617),
+            return Scaffold(
+              backgroundColor: _isDarkMode ? const Color(0xFF020617) : const Color(0xFFF8FAFC),
               body: Center(
-                child: CircularProgressIndicator(color: Colors.cyanAccent),
+                child: CircularProgressIndicator(color: _isDarkMode ? Colors.cyanAccent : Colors.blue),
               ),
             );
           }
@@ -142,10 +169,10 @@ class _PinCheckWrapperState extends State<_PinCheckWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF020617),
+      return Scaffold(
+        backgroundColor: widget.isDarkMode ? const Color(0xFF020617) : const Color(0xFFF8FAFC),
         body: Center(
-          child: CircularProgressIndicator(color: Colors.cyanAccent),
+          child: CircularProgressIndicator(color: widget.isDarkMode ? Colors.cyanAccent : Colors.blue),
         ),
       );
     }

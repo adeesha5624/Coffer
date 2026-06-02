@@ -168,9 +168,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Color _getChartColor() {
-    if (_selectedChartType == 'Income') return Colors.greenAccent;
-    if (_selectedChartType == 'Net Worth') return Colors.blueAccent;
-    return Colors.cyanAccent;
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    if (_selectedChartType == 'Income') return isDark ? Colors.greenAccent : Colors.green;
+    if (_selectedChartType == 'Net Worth') return isDark ? Colors.blueAccent : Colors.blue;
+    return isDark ? Colors.cyanAccent : Colors.indigoAccent;
   }
 
   // 🔓 Logout Confirmation Dialog
@@ -178,28 +179,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
+          Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
             SizedBox(width: 10),
-            Text("Logout", style: TextStyle(color: Colors.white)),
+            Text("Logout", style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
           ],
         ),
-        content: const Text(
+        content: Text(
           "ඔයා logout වෙන්න කැමතිද?\n\nPIN keep කරොත් next time PIN එකෙන් ඉක්මනට login වෙන්න පුළුවන්.",
-          style: TextStyle(color: Colors.white60, height: 1.5),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7), height: 1.5),
         ),
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
           // Cancel
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel",
-                style: TextStyle(color: Colors.white38)),
+            child: Text("Cancel",
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5))),
           ),
           // Logout & Clear PIN
           OutlinedButton(
@@ -290,8 +291,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon:
-                const Icon(Icons.analytics_outlined, color: Colors.cyanAccent),
+            icon: Icon(Icons.analytics_outlined, 
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
             tooltip: "Generate Reports",
             onPressed: () async {
               await Navigator.push(
@@ -383,8 +384,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   builder: (context) => const AddTransactionScreen()));
           _refreshData();
         },
-        backgroundColor: Colors.cyanAccent,
-        child: const Icon(Icons.add, color: Colors.black, size: 30),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
+        child: Icon(Icons.add, color: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white, size: 30),
       ),
     );
   }
@@ -447,7 +448,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedChartType,
-                  dropdownColor: const Color(0xFF1E293B),
+                  dropdownColor: Theme.of(context).cardColor,
                   style: TextStyle(
                       color: chartColor,
                       fontWeight: FontWeight.bold,
@@ -490,7 +491,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   child: Text(period,
                       style: TextStyle(
-                          color: isSelected ? chartColor : Colors.white38,
+                          color: isSelected ? chartColor : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5),
                           fontSize: 11,
                           fontWeight: isSelected
                               ? FontWeight.bold
@@ -717,7 +718,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     builder: (context) => const AddAccountScreen()));
             _refreshData();
           },
-          icon: const Icon(Icons.add_circle_outline, color: Colors.cyanAccent),
+          icon: Icon(Icons.add_circle_outline, 
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
         ),
       ],
     );
@@ -756,7 +758,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     acc['type'] == 'Cash'
                         ? Icons.wallet
                         : Icons.account_balance,
-                    color: Colors.cyanAccent),
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
                 const SizedBox(height: 8),
                 Text(acc['name'],
                     style: const TextStyle(

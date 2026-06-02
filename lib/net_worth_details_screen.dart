@@ -82,11 +82,12 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
       initialDateRange: DateTimeRange(start: _dateFrom, end: _dateTo),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.cyanAccent,
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
               onPrimary: Colors.black,
-              surface: Color(0xFF1E293B),
+              surface: Theme.of(context).cardColor,
+              onSurface: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           child: child!,
@@ -238,17 +239,16 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Net Worth Analytics",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("Net Worth Analytics", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: Colors.cyanAccent))
+              child: CircularProgressIndicator())
           : Column(
               children: [
                 // Top Net Worth Panel
@@ -257,21 +257,21 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                   padding: const EdgeInsets.all(25),
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
+                    gradient: LinearGradient(
+                        colors: [Theme.of(context).cardColor, Theme.of(context).scaffoldBackgroundColor]),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.1) ?? Colors.transparent),
                   ),
                   child: Column(
                     children: [
-                      const Text("Current Net Worth",
+                      Text("Current Net Worth",
                           style:
-                              TextStyle(color: Colors.white38, fontSize: 13)),
+                              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38), fontSize: 13)),
                       const SizedBox(height: 5),
                       Text(
                         "Rs. ${_currentNetWorth.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                            color: Colors.cyanAccent,
+                        style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
                             fontSize: 32,
                             fontWeight: FontWeight.bold),
                       ),
@@ -285,20 +285,28 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                   child: TextField(
                     controller: _searchController,
                     onChanged: (value) => _filterRecords(),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, color: Colors.cyanAccent),
+                      prefixIcon: Icon(Icons.search, color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
                       hintText: "Search Food, Reason, Category...",
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38)),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B),
+                      fillColor: Theme.of(context).cardColor,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
-                      ),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
                       suffixIcon: _currentQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.white54),
+                              icon: Icon(Icons.clear, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5)),
                               onPressed: () {
                                 _searchController.clear();
                                 _filterRecords();
@@ -324,16 +332,16 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                           onSelected: (selected) {
                             if (selected) _setDatePeriod(period);
                           },
-                          backgroundColor: const Color(0xFF1E293B),
-                          selectedColor: Colors.cyanAccent.withValues(alpha: 0.2),
+                          backgroundColor: Theme.of(context).cardColor,
+                          selectedColor: (Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent.withValues(alpha: 0.2) : Colors.indigoAccent.withValues(alpha: 0.2)),
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.cyanAccent : Colors.white70,
+                            color: isSelected ? (Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent) : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                             side: BorderSide(
-                              color: isSelected ? Colors.cyanAccent : Colors.white10,
+                              color: isSelected ? (Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent) : (Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.1) ?? Colors.transparent),
                             ),
                           ),
                         ),
@@ -344,12 +352,12 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                           padding: const EdgeInsets.only(right: 10),
                           child: ActionChip(
                             label: const Text('Custom'),
-                            avatar: const Icon(Icons.date_range, size: 16, color: Colors.white70),
-                            backgroundColor: const Color(0xFF1E293B),
-                            labelStyle: const TextStyle(color: Colors.white70),
+                            avatar: Icon(Icons.date_range, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
+                            backgroundColor: Theme.of(context).cardColor,
+                            labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
-                              side: const BorderSide(color: Colors.white10),
+                              side: BorderSide(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.1) ?? Colors.transparent),
                             ),
                             onPressed: () => _pickDateRange(),
                           ),
@@ -358,13 +366,13 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                   ),
                 ),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text("All Statements (Swipe left to delete)",
                         style: TextStyle(
-                            color: Colors.white70,
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                             fontSize: 14,
                             fontWeight: FontWeight.w500)),
                   ),
@@ -373,9 +381,9 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                 // History List
                 Expanded(
                   child: _displayedRecords.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text("No statement records found",
-                              style: TextStyle(color: Colors.white24)))
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.24))))
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           itemCount: _displayedRecords.length,
@@ -401,25 +409,25 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                      backgroundColor: const Color(0xFF1E293B),
-                                      title: const Text(
+                                      backgroundColor: Theme.of(context).cardColor,
+                                      title: Text(
                                         "Confirm Delete",
                                         style: TextStyle(
-                                            color: Colors.white,
+                                            color: Theme.of(context).textTheme.bodyLarge?.color,
                                             fontWeight: FontWeight.bold),
                                       ),
                                       content: Text(
                                         "Are you sure you want to delete '${rec.title}'? This will revert your account balance.",
-                                        style: const TextStyle(
-                                            color: Colors.white70),
+                                        style: TextStyle(
+                                            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
                                       ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.of(context).pop(false),
-                                          child: const Text("Cancel",
+                                          child: Text("Cancel",
                                               style: TextStyle(
-                                                  color: Colors.white38)),
+                                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38))),
                                         ),
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
@@ -427,9 +435,9 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                                   Colors.redAccent),
                                           onPressed: () =>
                                               Navigator.of(context).pop(true),
-                                          child: const Text("Delete",
+                                          child: Text("Delete",
                                               style: TextStyle(
-                                                  color: Colors.white)),
+                                                  color: Theme.of(context).textTheme.bodyLarge?.color)),
                                         ),
                                       ],
                                     );
@@ -444,8 +452,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                     color: Colors.redAccent.withValues(alpha: 0.8),
                                     borderRadius: BorderRadius.circular(18)),
                                 alignment: Alignment.centerRight,
-                                child: const Icon(Icons.delete_sweep,
-                                    color: Colors.white, size: 28),
+                                child: Icon(Icons.delete_sweep,
+                                    color: Theme.of(context).textTheme.bodyLarge?.color, size: 28),
                               ),
                               onDismissed: (direction) {
                                 _deleteRecord(rec);
@@ -475,18 +483,18 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(rec.title,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
+                                              style: TextStyle(
+                                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14)),
                                           Text(rec.date,
-                                              style: const TextStyle(
-                                                  color: Colors.white38,
+                                              style: TextStyle(
+                                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38),
                                                   fontSize: 11)),
                                           if (rec.subtitle.isNotEmpty)
                                             Text(rec.subtitle,
-                                                style: const TextStyle(
-                                                    color: Colors.white60,
+                                                style: TextStyle(
+                                                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                                                     fontSize: 12)),
                                         ],
                                       ),

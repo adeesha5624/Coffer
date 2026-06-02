@@ -23,35 +23,31 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          "Add New Account",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Add New Account"),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Account Name", style: TextStyle(color: Colors.white70)),
+            Text("Account Name", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7))),
             const SizedBox(height: 10),
             _buildTextField(_nameController, "e.g. HNB Bank, Commercial"),
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               "Initial Balance (Rs.)",
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
             ),
             const SizedBox(height: 10),
             _buildTextField(_balanceController, "0.00", isNumber: true),
             const SizedBox(height: 20),
 
-            const Text("Account Type", style: TextStyle(color: Colors.white70)),
+            Text("Account Type", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7))),
             const SizedBox(height: 10),
             _buildTypeDropdown(),
             const SizedBox(height: 40),
@@ -79,16 +75,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.cyanAccent,
+                backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
                 minimumSize: const Size(double.infinity, 60),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "Save Account",
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -107,15 +103,23 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     return TextField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white10),
+        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3)),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: Theme.of(context).cardColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
         ),
       ),
     );
@@ -125,15 +129,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
       ),
       child: DropdownButton<String>(
         value: _selectedType,
-        dropdownColor: const Color(0xFF1E293B),
+        dropdownColor: Theme.of(context).cardColor,
         isExpanded: true,
         underline: const SizedBox(),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
         items: [
           'Bank',
           'Cash',

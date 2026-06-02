@@ -75,11 +75,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.cyanAccent,
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
               onPrimary: Colors.black,
-              surface: Color(0xFF1E293B),
+              surface: Theme.of(context).cardColor,
+              onSurface: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           child: child!,
@@ -365,7 +366,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Universal Reports",
@@ -394,11 +395,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       hintText: "Search Friend Name...",
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B),
+                      fillColor: Theme.of(context).cardColor,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
-                      ),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
                       suffixIcon: _currentQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(
@@ -875,7 +884,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: _generatePDFReport,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.cyanAccent,
+                                    backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
                                     foregroundColor: Colors.black,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15),
