@@ -57,12 +57,18 @@ class _DebtListScreenState extends State<DebtListScreen> {
     }
 
     // 3. Update account balance — use the account stored on the debt record
-    final debtRow = await db.query('debts', where: 'id = ?', whereArgs: [id], limit: 1);
+    final debtRow = await db.query(
+      'debts',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
     final int accountId = debtRow.isNotEmpty
         ? (debtRow.first['account_id'] as int? ?? 1)
         : 1;
-    double balanceChange =
-        widget.initialType == 'Give' ? enteredAmount : -enteredAmount;
+    double balanceChange = widget.initialType == 'Give'
+        ? enteredAmount
+        : -enteredAmount;
     await db.rawUpdate(
       'UPDATE accounts SET balance = balance + ? WHERE id = ?',
       [balanceChange, accountId],
@@ -86,8 +92,8 @@ class _DebtListScreenState extends State<DebtListScreen> {
   }
 
   void _showSettleSheet(Map<String, dynamic> debt) {
-    _settleAmountController.text =
-        debt['amount'].toString(); // Default එකට මුළු ගාණම වැටෙන්න හදමු
+    _settleAmountController.text = debt['amount']
+        .toString(); // Default එකට මුළු ගාණම වැටෙන්න හදමු
 
     showModalBottomSheet(
       context: context,
@@ -111,8 +117,8 @@ class _DebtListScreenState extends State<DebtListScreen> {
           children: [
             Text(
               debt['person_name'],
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -120,7 +126,11 @@ class _DebtListScreenState extends State<DebtListScreen> {
             const SizedBox(height: 5),
             Text(
               "Remaining Balance: Rs. ${debt['amount'].toStringAsFixed(2)}",
-              style: const TextStyle(color: Colors.white38),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white38
+                    : Colors.black54,
+              ),
             ),
             const SizedBox(height: 25),
             const Text(
@@ -132,28 +142,45 @@ class _DebtListScreenState extends State<DebtListScreen> {
               controller: _settleAmountController,
               keyboardType: TextInputType.number,
               autofocus: true,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFF020617),
+                fillColor: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF020617)
+                    : Colors.grey[200],
                 prefixText: "Rs. ",
-                prefixStyle: const TextStyle(color: Colors.white70),
+                prefixStyle: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
                 border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-        ),
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.black26
+                        : Colors.transparent,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.black26
+                        : Colors.transparent,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -194,20 +221,24 @@ class _DebtListScreenState extends State<DebtListScreen> {
       appBar: AppBar(
         title: Text(
           widget.initialType == 'Give' ? "Money to Collect" : "Money to Pay",
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       ),
       body: _debts.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 "No active debts found",
-                style: TextStyle(color: Colors.white24),
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white24
+                      : Colors.black38,
+                ),
               ),
             )
           : ListView.builder(
@@ -221,14 +252,21 @@ class _DebtListScreenState extends State<DebtListScreen> {
                     margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black26,
+                      ),
                     ),
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: Colors.white.withValues(alpha: 0.05),
+                          backgroundColor:
+                              Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.05),
                           child: Icon(
                             widget.initialType == 'Give'
                                 ? Icons.arrow_downward
@@ -246,16 +284,22 @@ class _DebtListScreenState extends State<DebtListScreen> {
                             children: [
                               Text(
                                 debt['person_name'],
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 "Added: ${debt['date'] != null ? debt['date'].split(' ')[0] : ''}",
-                                style: const TextStyle(
-                                  color: Colors.white38,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white38
+                                      : Colors.black54,
                                   fontSize: 11,
                                 ),
                               ),
@@ -283,13 +327,22 @@ class _DebtListScreenState extends State<DebtListScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddDebtScreen(initialType: widget.initialType),
+              builder: (context) =>
+                  AddDebtScreen(initialType: widget.initialType),
             ),
           );
           _refreshDebts();
         },
-        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.black, size: 28),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.cyanAccent
+            : Theme.of(context).primaryColor,
+        child: Icon(
+          Icons.add,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.black
+              : Colors.white,
+          size: 28,
+        ),
       ),
     );
   }

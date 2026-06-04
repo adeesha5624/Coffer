@@ -49,9 +49,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final db = await DatabaseHelper.instance.database;
 
     final List<Map<String, dynamic>> collectResult = await db.rawQuery(
-        "SELECT SUM(amount) as total FROM debts WHERE type = 'Give' AND status != 'Paid'");
+      "SELECT SUM(amount) as total FROM debts WHERE type = 'Give' AND status != 'Paid'",
+    );
     final List<Map<String, dynamic>> payResult = await db.rawQuery(
-        "SELECT SUM(amount) as total FROM debts WHERE type = 'Take' AND status != 'Paid'");
+      "SELECT SUM(amount) as total FROM debts WHERE type = 'Take' AND status != 'Paid'",
+    );
 
     double collectSum =
         (collectResult.first['total'] as num?)?.toDouble() ?? 0.0;
@@ -63,8 +65,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     // 📊 --- Chart data preparation ---
-    final List<Map<String, dynamic>> allTransactions =
-        await db.query('transactions');
+    final List<Map<String, dynamic>> allTransactions = await db.query(
+      'transactions',
+    );
 
     final DateTime now = DateTime.now();
     // Start of current week (Monday)
@@ -88,9 +91,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         if (_selectedTimePeriod == 'Daily') {
           // Only include transactions from the current week (Mon–Fri)
-          final bool isCurrentWeek = txDate.isAfter(
-                weekStart.subtract(const Duration(days: 1)),
-              ) &&
+          final bool isCurrentWeek =
+              txDate.isAfter(weekStart.subtract(const Duration(days: 1))) &&
               txDate.isBefore(weekStart.add(const Duration(days: 7)));
           if (!isCurrentWeek) continue;
           spotIndex = txDate.weekday; // 1=Mon … 5=Fri (6,7 filtered below)
@@ -127,7 +129,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     List<FlSpot> computedSpots = [];
     if (_selectedChartType == 'Net Worth') {
       // Net worth ප්‍රස්ථාරය ඉස්සරහට ලස්සනට වැඩිවෙවී යන ප්‍රවණතාවයක් (Trend line) පෙන්වනවා
-      double currentRunning = netWorth -
+      double currentRunning =
+          netWorth -
           (periodValues[1]! +
               periodValues[2]! +
               periodValues[3]! +
@@ -169,8 +172,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Color _getChartColor() {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
-    if (_selectedChartType == 'Income') return isDark ? Colors.greenAccent : Colors.green;
-    if (_selectedChartType == 'Net Worth') return isDark ? Colors.blueAccent : Colors.blue;
+    if (_selectedChartType == 'Income') {
+      return isDark ? Colors.greenAccent : Colors.green;
+    }
+    if (_selectedChartType == 'Net Worth') {
+      return isDark ? Colors.blueAccent : Colors.blue;
+    }
     return isDark ? Colors.cyanAccent : Colors.indigoAccent;
   }
 
@@ -180,27 +187,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-          Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 24),
             SizedBox(width: 10),
-            Text("Logout", style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+            Text(
+              "Logout",
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
           ],
         ),
         content: Text(
           "ඔයා logout වෙන්න කැමතිද?\n\nPIN keep කරොත් next time PIN එකෙන් ඉක්මනට login වෙන්න පුළුවන්.",
-          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7), height: 1.5),
+          style: TextStyle(
+            color: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            height: 1.5,
+          ),
         ),
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
           // Cancel
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel",
-                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5))),
+            child: Text(
+              "Cancel",
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+              ),
+            ),
           ),
           // Logout & Clear PIN
           OutlinedButton(
@@ -214,8 +235,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text("Clear PIN & Logout",
-                style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+            child: const Text(
+              "Clear PIN & Logout",
+              style: TextStyle(color: Colors.redAccent, fontSize: 12),
+            ),
           ),
           // Logout (keep PIN)
           ElevatedButton(
@@ -229,8 +252,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text("Logout",
-                style: TextStyle(color: Colors.white)),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -273,9 +295,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Logout Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Logout Error: $e")));
     }
   }
 
@@ -287,12 +309,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Universal Wallet",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "My Universal Wallet",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.analytics_outlined, 
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
+            icon: Icon(
+              Icons.analytics_outlined,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.cyanAccent
+                  : Colors.indigoAccent,
+            ),
             tooltip: "Generate Reports",
             onPressed: () async {
               await Navigator.push(
@@ -308,8 +336,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               widget.onThemeChanged(!isDark);
             },
             icon: Icon(
-              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.orangeAccent : Colors.blueGrey,
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.orangeAccent
+                  : Colors.blueGrey,
             ),
           ),
           // 🔓 Logout Button
@@ -333,8 +365,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => NetWorthDetailsScreen(
-                            totalNetWorth: _totalNetWorth)),
+                      builder: (context) =>
+                          NetWorthDetailsScreen(totalNetWorth: _totalNetWorth),
+                    ),
                   );
                   _refreshData();
                 },
@@ -344,22 +377,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               Row(
                 children: [
-                  _buildDebtCard("To Collect", _toCollect, Colors.greenAccent,
-                      () async {
-                    await Navigator.push(
+                  _buildDebtCard(
+                    "To Collect",
+                    _toCollect,
+                    Colors.greenAccent,
+                    () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                const DebtListScreen(initialType: 'Give')));
-                    _refreshData();
-                  }),
+                          builder: (context) =>
+                              const DebtListScreen(initialType: 'Give'),
+                        ),
+                      );
+                      _refreshData();
+                    },
+                  ),
                   const SizedBox(width: 15),
                   _buildDebtCard("To Pay", _toPay, Colors.redAccent, () async {
                     await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const DebtListScreen(initialType: 'Take')));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const DebtListScreen(initialType: 'Take'),
+                      ),
+                    );
                     _refreshData();
                   }),
                 ],
@@ -379,13 +420,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const AddTransactionScreen()));
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTransactionScreen(),
+            ),
+          );
           _refreshData();
         },
-        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
-        child: Icon(Icons.add, color: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white, size: 30),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.cyanAccent
+            : Colors.indigoAccent,
+        child: Icon(
+          Icons.add,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.black
+              : Colors.white,
+          size: 30,
+        ),
       ),
     );
   }
@@ -396,13 +447,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-            colors: [Color(0xFF2563EB), Color(0xFF0891B2)]),
+          colors: [Color(0xFF2563EB), Color(0xFF0891B2)],
+        ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-              color: Colors.blueAccent.withValues(alpha: 0.2),
-              blurRadius: 15,
-              offset: const Offset(0, 5))
+            color: Colors.blueAccent.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Column(
@@ -411,17 +464,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Total Net Worth",
-                  style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text(
+                "Total Net Worth",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
               Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 14),
             ],
           ),
           const SizedBox(height: 5),
-          Text("Rs. ${_totalNetWorth.toStringAsFixed(2)}",
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            "Rs. ${_totalNetWorth.toStringAsFixed(2)}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -429,11 +487,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDynamicLineChart() {
     Color chartColor = _getChartColor();
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 15, 25, 15),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(24)),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: isDark ? null : Border.all(color: Colors.black26, width: 1),
+      ),
       child: Column(
         children: [
           Row(
@@ -441,21 +502,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.only(left: 10),
-                child: Text("Overview",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text(
+                  "Overview",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
               DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedChartType,
                   dropdownColor: Theme.of(context).cardColor,
                   style: TextStyle(
-                      color: chartColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13),
+                    color: chartColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                   items: ['Expense', 'Income', 'Net Worth']
-                      .map((String type) => DropdownMenuItem<String>(
-                          value: type, child: Text(type)))
+                      .map(
+                        (String type) => DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        ),
+                      )
                       .toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
@@ -478,24 +545,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _refreshData(); // 👈 කාල සීමාව (Daily/Weekly) මාරු කරපු ගමන් චාර්ට් එක අප්ඩේට් කරනවා මචං
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? chartColor.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: isSelected ? chartColor : Colors.transparent,
-                        width: 1),
+                      color: isSelected ? chartColor : Colors.transparent,
+                      width: 1,
+                    ),
                   ),
-                  child: Text(period,
-                      style: TextStyle(
-                          color: isSelected ? chartColor : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal)),
+                  child: Text(
+                    period,
+                    style: TextStyle(
+                      color: isSelected
+                          ? chartColor
+                          : Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.5),
+                      fontSize: 11,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
                 ),
               );
             }).toList(),
@@ -510,27 +586,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 titlesData: FlTitlesData(
                   show: true,
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 35,
                       getTitlesWidget: (value, meta) {
                         if (value == 0) {
-                          return const Text('0',
-                              style: TextStyle(
-                                  color: Colors.white38, fontSize: 10));
+                          return const Text(
+                            '0',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 10,
+                            ),
+                          );
                         }
                         if (value >= 1000) {
-                          return Text('${(value / 1000).toStringAsFixed(0)}k',
-                              style: const TextStyle(
-                                  color: Colors.white38, fontSize: 10));
-                        }
-                        return Text(value.toInt().toString(),
+                          return Text(
+                            '${(value / 1000).toStringAsFixed(0)}k',
                             style: const TextStyle(
-                                color: Colors.white38, fontSize: 10));
+                              color: Colors.white38,
+                              fontSize: 10,
+                            ),
+                          );
+                        }
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 10,
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -542,94 +632,174 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (_selectedTimePeriod == 'Daily') {
                           switch (idx) {
                             case 1:
-                              return const Text('Mon',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Mon',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 2:
-                              return const Text('Tue',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Tue',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 3:
-                              return const Text('Wed',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Wed',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 4:
-                              return const Text('Thu',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Thu',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 5:
-                              return const Text('Fri',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Fri',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                           }
                         } else if (_selectedTimePeriod == 'Monthly') {
                           switch (idx) {
                             case 1:
-                              return const Text('Jan',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Jan',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 2:
-                              return const Text('Feb',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Feb',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 3:
-                              return const Text('Mar',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Mar',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 4:
-                              return const Text('Apr',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'Apr',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 5:
-                              return const Text('May',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'May',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                           }
                         } else if (_selectedTimePeriod == 'Yearly') {
                           switch (idx) {
                             case 1:
-                              return const Text('2022',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                '2022',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 2:
-                              return const Text('2023',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                '2023',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 3:
-                              return const Text('2024',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                '2024',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 4:
-                              return const Text('2025',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                '2025',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 5:
-                              return const Text('2026',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                '2026',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                           }
                         } else {
                           switch (idx) {
                             case 1:
-                              return const Text('W1',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'W1',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 2:
-                              return const Text('W2',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'W2',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 3:
-                              return const Text('W3',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'W3',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 4:
-                              return const Text('W4',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'W4',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                             case 5:
-                              return const Text('W5',
-                                  style: TextStyle(
-                                      color: Colors.white54, fontSize: 10));
+                              return const Text(
+                                'W5',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              );
                           }
                         }
                         return const Text('');
@@ -646,14 +816,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: true),
                     belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                            colors: [
-                              chartColor.withValues(alpha: 0.2),
-                              chartColor.withValues(alpha: 0.0)
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter)),
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          chartColor.withValues(alpha: 0.2),
+                          chartColor.withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -665,7 +837,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDebtCard(
-      String title, double amount, Color amountColor, VoidCallback onTap) {
+    String title,
+    double amount,
+    Color amountColor,
+    VoidCallback onTap,
+  ) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: InkWell(
@@ -674,28 +850,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                if (!isDark)
-                  BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      spreadRadius: 1,
-                      blurRadius: 5)
-              ]),
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(18),
+            border: isDark ? null : Border.all(color: Colors.black26, width: 1),
+            boxShadow: [
+              if (!isDark)
+                BoxShadow(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                ),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: TextStyle(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                      fontSize: 12)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white60 : Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
               const SizedBox(height: 5),
-              Text("Rs. ${amount.toStringAsFixed(2)}",
-                  style: TextStyle(
-                      color: amountColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold)),
+              Text(
+                "Rs. ${amount.toStringAsFixed(2)}",
+                style: TextStyle(
+                  color: amountColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -707,19 +892,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("My Accounts",
-            style: TextStyle(
-                color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          "My Accounts",
+          style: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         IconButton(
           onPressed: () async {
             await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const AddAccountScreen()));
+              context,
+              MaterialPageRoute(builder: (context) => const AddAccountScreen()),
+            );
             _refreshData();
           },
-          icon: Icon(Icons.add_circle_outline, 
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
+          icon: Icon(
+            Icons.add_circle_outline,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.cyanAccent
+                : Colors.indigoAccent,
+          ),
         ),
       ],
     );
@@ -731,45 +925,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _accounts.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 15,
-          childAspectRatio: 1.3),
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 15,
+        childAspectRatio: 1.3,
+      ),
       itemBuilder: (context, index) {
         final acc = _accounts[index];
         return InkWell(
           onTap: () async {
             await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => AccountDetailsScreen(
-                        accountId: acc['id'], accountName: acc['name'])));
+              context,
+              MaterialPageRoute(
+                builder: (context) => AccountDetailsScreen(
+                  accountId: acc['id'],
+                  accountName: acc['name'],
+                ),
+              ),
+            );
             _refreshData();
           },
           child: Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(20)),
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Theme.of(context).brightness == Brightness.dark
+                  ? null
+                  : Border.all(color: Colors.black26, width: 1),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                    acc['type'] == 'Cash'
-                        ? Icons.wallet
-                        : Icons.account_balance,
-                    color: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent),
+                  acc['type'] == 'Cash' ? Icons.wallet : Icons.account_balance,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.cyanAccent
+                      : Colors.indigoAccent,
+                ),
                 const SizedBox(height: 8),
-                Text(acc['name'],
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13)),
                 Text(
-                    "Rs. ${(acc['balance'] as num).toDouble().toStringAsFixed(2)}",
-                    style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white60
-                            : Colors.black54,
-                        fontSize: 12)),
+                  acc['name'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  "Rs. ${(acc['balance'] as num).toDouble().toStringAsFixed(2)}",
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white60
+                        : Colors.black54,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),

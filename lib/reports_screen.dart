@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -62,7 +60,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
     });
 
-    // 🔄 Always refresh search when period changes so it loads data initially
     _handleSearch();
   }
 
@@ -77,7 +74,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Colors.indigoAccent,
+              primary: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.cyanAccent
+                  : const Color(0xFF00ADB5),
               onPrimary: Colors.black,
               surface: Theme.of(context).cardColor,
               onSurface: Theme.of(context).textTheme.bodyLarge?.color,
@@ -98,7 +97,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         _selectedPeriod = 'Custom';
       });
 
-      // 🔄 Refresh data when custom date is picked
       _handleSearch();
     }
   }
@@ -115,14 +113,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final String dateFromStr = DateFormat('yyyy-MM-dd').format(_dateFrom);
     final String dateToStr = DateFormat('yyyy-MM-dd').format(_dateTo);
 
-    // Search with date range filter
     final data = await DatabaseHelper.instance.searchByDateRange(
       query: query.isEmpty ? null : query,
       dateFrom: dateFromStr,
       dateTo: dateToStr,
     );
 
-    // Analytics calculate කරනවා
     double given = 0.0;
     double taken = 0.0;
     int count = data.length;
@@ -163,7 +159,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Report Header
                 pw.Text(
                   "UNIVERSAL WALLET - TRANSACTION REPORT",
                   style: pw.TextStyle(
@@ -198,7 +193,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 pw.Divider(thickness: 1.5, color: PdfColors.blue900),
                 pw.SizedBox(height: 15),
 
-                // Summary Card
                 pw.Container(
                   padding: const pw.EdgeInsets.all(15),
                   decoration: pw.BoxDecoration(
@@ -265,7 +259,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
                 pw.SizedBox(height: 10),
 
-                // Table
                 pw.Table(
                   border: pw.TableBorder.all(
                     color: PdfColors.grey400,
@@ -334,9 +327,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final fileName = _currentQuery.isNotEmpty
           ? "Report_${_currentQuery}_${DateFormat('yyyyMMdd').format(_dateFrom)}"
           : "Report_${DateFormat('yyyyMMdd').format(_dateFrom)}_${DateFormat('yyyyMMdd').format(_dateTo)}";
-      
-      // 🌐 Use printing package to safely share/download PDF on Web, iOS, and Android
-      await Printing.sharePdf(bytes: await pdf.save(), filename: "$fileName.pdf");
+
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename: "$fileName.pdf",
+      );
     } catch (e) {
       debugPrint("PDF Generation Error: $e");
     }
@@ -365,16 +360,42 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🌓 ඩාර්ක් මෝඩ් ද නැද්ද කියලා මෙතනින් චෙක් කරලා Dynamic Colors සෙට් කරනවා මචං
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color primaryTextColor = isDark
+        ? Colors.white
+        : const Color(0xFF0F172A);
+    final Color secondaryTextColor = isDark
+        ? Colors.white70
+        : const Color(0xFF334155);
+    final Color mutedTextColor = isDark
+        ? Colors.white38
+        : const Color(0xFF64748B);
+    final Color containerBg = isDark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFF1F5F9);
+    final Color itemTileBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final Color accentColor = isDark
+        ? Colors.cyanAccent
+        : const Color(0xFF00ADB5);
+    final Color searchIconColor = isDark ? Colors.black : Colors.white;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        // 🎯 1. AppBar Title එක ලයිට් මෝඩ් එකේදී කළු පාටට හැරෙනවා මචං
+        title: Text(
           "Universal Reports",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: primaryTextColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: primaryTextColor,
+        // 🎯 2. Back Arrow එකත් ලයිට් මෝඩ් එකේදී කළු පාට වෙනවා
+        iconTheme: IconThemeData(color: primaryTextColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -386,33 +407,38 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(color: Colors.white),
+                    // 🎯 3. ටයිප් කරන අකුරු වල පාට මෝඩ් එක අනුව ඔටෝම හැරෙනවා
+                    style: TextStyle(color: primaryTextColor),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.manage_search,
-                        color: Colors.cyanAccent,
-                      ),
+                      prefixIcon: Icon(Icons.manage_search, color: accentColor),
                       hintText: "Search Friend Name...",
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: TextStyle(color: mutedTextColor),
                       filled: true,
                       fillColor: Theme.of(context).cardColor,
                       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.light ? Colors.black26 : Colors.transparent),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-        ),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: isDark ? Colors.transparent : Colors.black12,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: isDark ? Colors.transparent : Colors.black12,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: 2,
+                        ),
+                      ),
                       suffixIcon: _currentQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
-                                color: Colors.white38,
+                                color: mutedTextColor,
                                 size: 18,
                               ),
                               onPressed: () {
@@ -438,12 +464,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.cyanAccent,
+                      color: accentColor,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.search_rounded,
-                      color: Colors.black,
+                      color: searchIconColor,
                       size: 24,
                     ),
                   ),
@@ -466,24 +492,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
+                        color:
+                            containerBg, // 🎯 4. ඩාර්ක්/ලයිට් අනුව මාරු වෙන පසුබිම
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.cyanAccent.withValues(alpha: 0.2),
+                          color: accentColor.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.calendar_today,
-                            color: Colors.cyanAccent,
+                            color: accentColor,
                             size: 14,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateFrom),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: primaryTextColor,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -493,11 +520,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Icon(
                     Icons.arrow_forward,
-                    color: Colors.white24,
+                    color: mutedTextColor,
                     size: 16,
                   ),
                 ),
@@ -511,24 +538,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
+                        color: containerBg,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.cyanAccent.withValues(alpha: 0.2),
+                          color: accentColor.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.calendar_today,
-                            color: Colors.cyanAccent,
+                            color: accentColor,
                             size: 14,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateTo),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: primaryTextColor,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -555,22 +582,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.cyanAccent.withValues(alpha: 0.15)
+                            ? accentColor.withValues(alpha: 0.15)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isSelected
-                              ? Colors.cyanAccent
-                              : Colors.white.withValues(alpha: 0.08),
+                              ? accentColor
+                              : (isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black12),
                         ),
                       ),
                       child: Center(
                         child: Text(
                           period,
+                          // 🎯 5. "Today, Week, All" අකුරු ලයිට් මෝඩ් එකේදීත් ලස්සනට පේනවා මචං
                           style: TextStyle(
                             color: isSelected
-                                ? Colors.cyanAccent
-                                : Colors.white38,
+                                ? (isDark
+                                      ? Colors.cyanAccent
+                                      : const Color(0xFF00ADB5))
+                                : mutedTextColor,
                             fontSize: 11,
                             fontWeight: isSelected
                                 ? FontWeight.bold
@@ -588,11 +620,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
             // Results Area
             _isLoading
-                ? const Expanded(
+                ? Expanded(
                     child: Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.cyanAccent,
-                      ),
+                      child: CircularProgressIndicator(color: accentColor),
                     ),
                   )
                 : Expanded(
@@ -603,15 +633,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
                               children: [
                                 Icon(
                                   Icons.search_rounded,
-                                  color: Colors.white.withValues(alpha: 0.08),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : Colors.black.withValues(alpha: 0.05),
                                   size: 80,
                                 ),
                                 const SizedBox(height: 15),
-                                const Text(
+                                Text(
                                   "Search by Friend Name\nwith date filters to view reports",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white24,
+                                    color: mutedTextColor,
                                     height: 1.5,
                                   ),
                                 ),
@@ -626,27 +658,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      const Color(0xFF1E293B),
-                                      const Color(
-                                        0xFF1E293B,
-                                      ).withValues(alpha: 0.8),
+                                      containerBg,
+                                      containerBg.withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
-                                    color: Colors.cyanAccent.withValues(
-                                      alpha: 0.15,
-                                    ),
+                                    color: accentColor.withValues(alpha: 0.15),
                                   ),
                                 ),
                                 child: Column(
                                   children: [
-                                    // Header
                                     Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.analytics_rounded,
-                                          color: Colors.cyanAccent,
+                                          color: accentColor,
                                           size: 18,
                                         ),
                                         const SizedBox(width: 8),
@@ -654,8 +681,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           _currentQuery.isNotEmpty
                                               ? "Analytics for '$_currentQuery'"
                                               : "Analytics Summary",
-                                          style: const TextStyle(
-                                            color: Colors.white70,
+                                          style: TextStyle(
+                                            color: secondaryTextColor,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -667,7 +694,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                             vertical: 3,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.cyanAccent.withValues(
+                                            color: accentColor.withValues(
                                               alpha: 0.1,
                                             ),
                                             borderRadius: BorderRadius.circular(
@@ -676,8 +703,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           ),
                                           child: Text(
                                             "$_totalCount records",
-                                            style: const TextStyle(
-                                              color: Colors.cyanAccent,
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.cyanAccent
+                                                  : const Color(0xFF00ADB5),
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -687,10 +716,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     ),
                                     const SizedBox(height: 14),
 
-                                    // Stats row
                                     Row(
                                       children: [
-                                        // Given
                                         _buildStatItem(
                                           "Given",
                                           "Rs. ${_totalGiven.toStringAsFixed(0)}",
@@ -698,7 +725,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           Icons.arrow_upward_rounded,
                                         ),
                                         const SizedBox(width: 10),
-                                        // Taken
                                         _buildStatItem(
                                           "Taken",
                                           "Rs. ${_totalTaken.toStringAsFixed(0)}",
@@ -706,7 +732,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           Icons.arrow_downward_rounded,
                                         ),
                                         const SizedBox(width: 10),
-                                        // Net
                                         _buildStatItem(
                                           "Net",
                                           "Rs. ${_netBalance.toStringAsFixed(0)}",
@@ -740,17 +765,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                       margin: const EdgeInsets.only(bottom: 8),
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
+                                        color:
+                                            itemTileBg, // 🎯 6. List Items වල Background එක ලයිට් මෝඩ් එකේ සුදු වෙනවා මචං
                                         borderRadius: BorderRadius.circular(14),
                                         border: Border.all(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.04,
-                                          ),
+                                          color: isDark
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.04,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.04,
+                                                ),
                                         ),
                                       ),
                                       child: Row(
                                         children: [
-                                          // Icon
                                           Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
@@ -775,7 +804,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           ),
                                           const SizedBox(width: 12),
 
-                                          // Info
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment:
@@ -783,8 +811,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                               children: [
                                                 Text(
                                                   "${row['person_name']}",
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
+                                                  style: TextStyle(
+                                                    color:
+                                                        primaryTextColor, // 🎯 7. යාළුවන්ගේ නම් ලස්සනට කළු පාටින් පේනවා
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 14,
                                                   ),
@@ -792,7 +821,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                 const SizedBox(height: 3),
                                                 Row(
                                                   children: [
-                                                    // Date chip
                                                     Container(
                                                       padding:
                                                           const EdgeInsets.symmetric(
@@ -800,10 +828,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                             vertical: 2,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.white
-                                                            .withValues(
-                                                              alpha: 0.05,
-                                                            ),
+                                                        color: isDark
+                                                            ? Colors.white
+                                                                  .withValues(
+                                                                    alpha: 0.05,
+                                                                  )
+                                                            : Colors.black
+                                                                  .withValues(
+                                                                    alpha: 0.05,
+                                                                  ),
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               5,
@@ -811,8 +844,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                       ),
                                                       child: Text(
                                                         dateStr.split(' ')[0],
-                                                        style: const TextStyle(
-                                                          color: Colors.white38,
+                                                        style: TextStyle(
+                                                          color: mutedTextColor,
                                                           fontSize: 10,
                                                         ),
                                                       ),
@@ -822,7 +855,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                             .toString()
                                                             .isNotEmpty) ...[
                                                       const SizedBox(width: 6),
-                                                      // Reason chip
                                                       Container(
                                                         padding:
                                                             const EdgeInsets.symmetric(
@@ -830,11 +862,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                               vertical: 2,
                                                             ),
                                                         decoration: BoxDecoration(
-                                                          color: Colors
-                                                              .cyanAccent
-                                                              .withValues(
-                                                                alpha: 0.08,
-                                                              ),
+                                                          color:
+                                                              (isDark
+                                                                      ? Colors
+                                                                            .cyanAccent
+                                                                      : const Color(
+                                                                          0xFF00ADB5,
+                                                                        ))
+                                                                  .withValues(
+                                                                    alpha: 0.08,
+                                                                  ),
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 5,
@@ -842,12 +879,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                         ),
                                                         child: Text(
                                                           row['reason'],
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Colors
-                                                                    .cyanAccent,
-                                                                fontSize: 10,
-                                                              ),
+                                                          style: TextStyle(
+                                                            color: isDark
+                                                                ? Colors
+                                                                      .cyanAccent
+                                                                : const Color(
+                                                                    0xFF00ADB5,
+                                                                  ),
+                                                            fontSize: 10,
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
@@ -857,7 +897,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                             ),
                                           ),
 
-                                          // Amount
                                           Text(
                                             "${isTake ? '+' : '-'} Rs. ${amt.toStringAsFixed(0)}",
                                             style: TextStyle(
@@ -884,8 +923,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: _generatePDFReport,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
-                                    foregroundColor: Colors.black,
+                                    backgroundColor: isDark
+                                        ? Colors.cyanAccent
+                                        : Theme.of(context).primaryColor,
+                                    foregroundColor: isDark
+                                        ? Colors.black
+                                        : Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15),
                                     ),
@@ -908,7 +951,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  // 📊 Analytics stat item widget
   Widget _buildStatItem(
     String label,
     String value,

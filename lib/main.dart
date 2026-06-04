@@ -45,44 +45,65 @@ class _MyAppState extends State<MyApp> {
 
       // ⚪ Light Theme සැකසුම් (Beautiful Modern Light Mode)
       theme: ThemeData(
+        useMaterial3: true,
         brightness: Brightness.light,
-        primaryColor: const Color(0xFF2563EB), // Vibrant Blue
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC), // Slate 50
-        cardColor: Colors.white,
+        scaffoldBackgroundColor: const Color(
+          0xFFF8FAFC,
+        ), // Slate 50 (පිරිසිදු Off-White පසුබිම)
+        cardColor: Colors.white, // Cards වලට පිරිසිදු සුදු පාට
+        // 🎨 Light mode එකට ගැලපෙන වර්ණ පද්ධතිය ඔටෝම සෙට් කරගන්නවා මචං
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF00ADB5), // ඔයාගේ ප්‍රධාන Teal සන්නාම වර්ණය
+          brightness: Brightness.light,
+          primary: const Color(0xFF00ADB5),
+          surface: const Color(
+            0xFFF1F5F9,
+          ), // Containers වලට Soft Slate Gray එකක්
+          onBackground: const Color(
+            0xFF0F172A,
+          ), // පසුබිම උඩ වැටෙන තද Slate කළු අකුරු
+          onSurface: const Color(0xFF0F172A),
+        ),
+
+        // 🏛️ Light Mode එකට ගැළපෙන පිරිසිදු AppBar සැකසුම
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF8FAFC),
+          backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFF0F172A)), // Slate 900
-          titleTextStyle: TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFF1E293B)), // Slate 800
-          bodyMedium: TextStyle(color: Color(0xFF334155)), // Slate 700
-          titleLarge: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF2563EB)),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF2563EB),
-          secondary: Color(0xFF0891B2), // Cyan 600
-          surface: Colors.white,
-          onSurface: Color(0xFF0F172A),
-          background: Color(0xFFF8FAFC),
-          onBackground: Color(0xFF0F172A),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          iconTheme: IconThemeData(color: Color(0xFF0F172A)),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
 
       // ⚫ Dark Theme සැකසුම් (ඔයාගේ UI එකේ තියෙන පට්ටම ලස්සන ඩාර්ක් කලර්ස් ටික)
       darkTheme: ThemeData(
+        useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF020617),
         cardColor: const Color(0xFF1E293B),
+
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF00ADB5),
+          brightness: Brightness.dark,
+          primary: const Color(0xFF00ADB5),
+          surface: const Color(0xFF1E293B),
+          onBackground: Colors.white,
+          onSurface: Colors.white,
+        ),
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
 
       // දැනට ඇප් එකේ තියෙන තීම් ස්ටේට් එක (Dark/Light) තෝරාගැනීම
@@ -95,9 +116,13 @@ class _MyAppState extends State<MyApp> {
           // Firebase එකෙන් ලොගින් විස්තර චෙක් කරනකම් ලෝඩින් එකක් පෙන්වනවා
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(
-              backgroundColor: _isDarkMode ? const Color(0xFF020617) : const Color(0xFFF8FAFC),
+              backgroundColor: _isDarkMode
+                  ? const Color(0xFF020617)
+                  : const Color(0xFFF8FAFC),
               body: Center(
-                child: CircularProgressIndicator(color: _isDarkMode ? Colors.cyanAccent : Colors.blue),
+                child: CircularProgressIndicator(
+                  color: _isDarkMode ? Colors.cyanAccent : Colors.blue,
+                ),
               ),
             );
           }
@@ -170,9 +195,17 @@ class _PinCheckWrapperState extends State<_PinCheckWrapper> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: widget.isDarkMode ? const Color(0xFF020617) : const Color(0xFFF8FAFC),
+        backgroundColor: widget.isDarkMode
+            ? const Color(0xFF020617)
+            : const Color(0xFFF8FAFC),
         body: Center(
-          child: CircularProgressIndicator(color: widget.isDarkMode ? Colors.cyanAccent : Colors.blue),
+          child: CircularProgressIndicator(
+            color: widget.isDarkMode
+                ? Colors.cyanAccent
+                : widget.isDarkMode
+                ? Colors.cyanAccent
+                : Colors.blue,
+          ),
         ),
       );
     }
