@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pin_helper.dart';
-import 'dashboard_screen.dart';
+import 'onboarding_screen.dart';
 
 enum PinMode { setup, login }
 
@@ -47,9 +47,10 @@ class _PinScreenState extends State<PinScreen>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _shakeAnimation = Tween<double>(begin: 0, end: 24)
-        .chain(CurveTween(curve: Curves.elasticIn))
-        .animate(_shakeController);
+    _shakeAnimation = Tween<double>(
+      begin: 0,
+      end: 24,
+    ).chain(CurveTween(curve: Curves.elasticIn)).animate(_shakeController);
     _shakeController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _shakeController.reset();
@@ -101,7 +102,9 @@ class _PinScreenState extends State<PinScreen>
 
     if (key == 'delete') {
       if (_enteredPin.isNotEmpty) {
-        setState(() => _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1));
+        setState(
+          () => _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1),
+        );
       }
       return;
     }
@@ -185,9 +188,11 @@ class _PinScreenState extends State<PinScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(locked
-              ? "Too many attempts! Locked for ${PinHelper.lockDurationSeconds}s"
-              : "Wrong PIN! ${PinHelper.maxAttempts - attempts} attempts left"),
+          content: Text(
+            locked
+                ? "Too many attempts! Locked for ${PinHelper.lockDurationSeconds}s"
+                : "Wrong PIN! ${PinHelper.maxAttempts - attempts} attempts left",
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -197,12 +202,7 @@ class _PinScreenState extends State<PinScreen>
   void _navigateToDashboard() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => DashboardScreen(
-          onThemeChanged: widget.onThemeChanged,
-          isDarkMode: widget.isDarkMode,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
     );
   }
 
@@ -227,7 +227,10 @@ class _PinScreenState extends State<PinScreen>
                   gradient: LinearGradient(
                     colors: _showSuccess
                         ? [Colors.greenAccent, const Color(0xFF00E676)]
-                        : [Colors.cyanAccent.withValues(alpha: 0.2), Colors.cyanAccent.withValues(alpha: 0.05)],
+                        : [
+                            Colors.cyanAccent.withValues(alpha: 0.2),
+                            Colors.cyanAccent.withValues(alpha: 0.05),
+                          ],
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -254,8 +257,8 @@ class _PinScreenState extends State<PinScreen>
               _isLocked
                   ? "Account Locked"
                   : isSetup
-                      ? (_isConfirming ? "Confirm Your PIN" : "Create a PIN")
-                      : "Enter Your PIN",
+                  ? (_isConfirming ? "Confirm Your PIN" : "Create a PIN")
+                  : "Enter Your PIN",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -271,10 +274,10 @@ class _PinScreenState extends State<PinScreen>
               _isLocked
                   ? "Try again in $_remainingSeconds seconds"
                   : isSetup
-                      ? (_isConfirming
-                          ? "Re-enter your 4-digit PIN"
-                          : "Set a 4-digit PIN for quick access")
-                      : "Enter your 4-digit PIN to continue",
+                  ? (_isConfirming
+                        ? "Re-enter your 4-digit PIN"
+                        : "Set a 4-digit PIN for quick access")
+                  : "Enter your 4-digit PIN to continue",
               style: TextStyle(
                 color: _isLocked ? Colors.redAccent : Colors.white38,
                 fontSize: 13,
@@ -290,7 +293,9 @@ class _PinScreenState extends State<PinScreen>
                 return Transform.translate(
                   offset: Offset(
                     _shakeAnimation.value *
-                        ((_shakeController.value * 10).toInt() % 2 == 0 ? 1 : -1),
+                        ((_shakeController.value * 10).toInt() % 2 == 0
+                            ? 1
+                            : -1),
                     0,
                   ),
                   child: child,
@@ -310,14 +315,14 @@ class _PinScreenState extends State<PinScreen>
                       color: _showSuccess
                           ? Colors.greenAccent
                           : isFilled
-                              ? Colors.cyanAccent
-                              : Colors.transparent,
+                          ? Colors.cyanAccent
+                          : Colors.transparent,
                       border: Border.all(
                         color: _showSuccess
                             ? Colors.greenAccent
                             : isFilled
-                                ? Colors.cyanAccent
-                                : Colors.white24,
+                            ? Colors.cyanAccent
+                            : Colors.white24,
                         width: 2,
                       ),
                       boxShadow: isFilled
@@ -327,7 +332,7 @@ class _PinScreenState extends State<PinScreen>
                                     ? Colors.greenAccent.withValues(alpha: 0.4)
                                     : Colors.cyanAccent.withValues(alpha: 0.4),
                                 blurRadius: 8,
-                              )
+                              ),
                             ]
                           : null,
                     ),
@@ -364,8 +369,10 @@ class _PinScreenState extends State<PinScreen>
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      title: const Text("Forgot PIN?",
-                          style: TextStyle(color: Colors.white)),
+                      title: const Text(
+                        "Forgot PIN?",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       content: const Text(
                         "PIN clear කරලා Google/WhatsApp වලින් අලුතෙන් login වෙන්න වෙනවා.",
                         style: TextStyle(color: Colors.white60),
@@ -373,8 +380,10 @@ class _PinScreenState extends State<PinScreen>
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text("Cancel",
-                              style: TextStyle(color: Colors.white38)),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.white38),
+                          ),
                         ),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(ctx, true),
