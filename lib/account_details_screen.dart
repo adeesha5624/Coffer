@@ -121,7 +121,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+              child: Text("Cancel")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor),
             onPressed: () async {
@@ -135,7 +135,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 nav.pop();
               }
             },
-            child: const Text("Save", style: TextStyle(color: Colors.black)),
+            child: Text("Save", style: TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -147,12 +147,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
-        title: const Text("Delete Account?"),
-        content: const Text("Are you sure you want to delete this account?"),
+        title: Text("Delete Account?"),
+        content: Text("Are you sure you want to delete this account?"),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+              child: Text("Cancel")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
@@ -161,7 +161,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text("Delete"),
+            child: Text("Delete"),
           ),
         ],
       ),
@@ -180,18 +180,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         
         actions: [
           IconButton(
-              icon: const Icon(Icons.edit_note,
+              icon: Icon(Icons.edit_note,
                   color: Colors.cyanAccent, size: 28),
               onPressed: _showRenameDialog),
           IconButton(
-              icon: const Icon(Icons.delete_outline,
+              icon: Icon(Icons.delete_outline,
                   color: Colors.redAccent, size: 24),
               onPressed: _showDeleteConfirmation),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: Colors.cyanAccent))
           : _combinedList.isEmpty
               ? Center(
@@ -208,7 +208,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(15)),
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -233,7 +233,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                     color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38), fontSize: 11)),
                             if (item.subInfo.isNotEmpty)
                               Text(item.subInfo,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: Colors.cyanAccent, fontSize: 12)),
                           ],
                         ),

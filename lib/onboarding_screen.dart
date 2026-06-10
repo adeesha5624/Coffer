@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,8 +31,8 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accentColor = isDark ? Colors.cyanAccent : const Color(0xFF00ADB5);
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final accentColor = isDark ? Colors.cyanAccent : Color(0xFF00ADB5);
+    final textColor = isDark ? Colors.white : Color(0xFF0F172A);
 
     // 🎨 Slides වල අකුරු සහ මෝස්තර සෙටප් එක
     final pageDecoration = PageDecoration(
@@ -42,7 +43,7 @@ class OnboardingScreen extends StatelessWidget {
       ),
       bodyTextStyle: TextStyle(
         fontSize: 16.0,
-        color: isDark ? Colors.white70 : Colors.black54,
+        color: isDark ? AppTheme.textSecondary(context) : Colors.black54,
         height: 1.5,
       ),
       imagePadding: const EdgeInsets.only(top: 40.0),
@@ -109,11 +110,11 @@ class OnboardingScreen extends StatelessWidget {
 
       // 📍 යටින් පෙනෙන තිත් කෑලි (Dots Indicator) සෙටප් එක
       dotsDecorator: DotsDecorator(
-        size: const Size(10.0, 10.0),
+        size: Size(10.0, 10.0),
         color: isDark ? Colors.white24 : Colors.black12,
         activeColor: accentColor,
-        activeSize: const Size(22.0, 10.0),
-        activeShape: const RoundedRectangleBorder(
+        activeSize: Size(22.0, 10.0),
+        activeShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(25.0)),
         ),
       ),

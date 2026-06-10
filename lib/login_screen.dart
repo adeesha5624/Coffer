@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -115,15 +116,15 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
 
               children: [
-                const Icon(
+                Icon(
                   Icons.account_balance_wallet_outlined,
                   size: 80,
                   color: Colors.cyanAccent,
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
-                const Text(
+                Text(
                   "Universal Wallet",
                   style: TextStyle(
                     color: Colors.cyanAccent,
@@ -132,14 +133,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
 
-                const Text(
+                Text(
                   "Choose your secure login option",
-                  style: TextStyle(color: Colors.white54, fontSize: 13),
+                  style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13),
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
 
                 // ================= GOOGLE LOGIN =================
                 SizedBox(
@@ -150,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading ? null : _signInWithGoogle,
 
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white24),
+                      side: BorderSide(color: Colors.white24),
 
                       foregroundColor: Colors.white,
 
@@ -159,13 +160,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.g_mobiledata,
                       size: 30,
                       color: Colors.white,
                     ),
 
-                    label: const Text(
+                    label: Text(
                       "Continue with Google",
                       style: TextStyle(
                         fontSize: 15,
@@ -175,10 +176,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
 
                 // Security note
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.shield_rounded, color: Colors.white12, size: 14),

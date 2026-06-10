@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'database_helper.dart';
@@ -87,7 +88,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     if (personName.isEmpty || amount <= 0 || _selectedAccountId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill name and amount correctly")),
+        SnackBar(content: Text("Please fill name and amount correctly")),
       );
       return;
     }
@@ -134,7 +135,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         elevation: 0,
       ),
       body: _isLoadingAccounts
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: Colors.cyanAccent),
             )
           : SingleChildScrollView(
@@ -147,7 +148,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Row(
@@ -168,7 +169,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
 
                   // Person Name Input
                   _label("Person Name"),
@@ -178,7 +179,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     Icons.person_outline,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Reason Input
                   _label("Reason / Note"),
@@ -188,7 +189,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     Icons.edit_note,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Amount Input
                   _label("Amount (Rs.)"),
@@ -199,7 +200,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     isNumber: true,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Account Dropdown සහ Date Picker එක එක ළඟින්
                   Row(
@@ -217,7 +218,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: _accountsList.isEmpty
@@ -264,7 +265,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         ),
                       ),
 
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
 
                       // Date Picker
                       Expanded(
@@ -280,17 +281,17 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                                   vertical: 16,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B),
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.calendar_today,
                                       color: Colors.cyanAccent,
                                       size: 18,
                                     ),
-                                    const SizedBox(width: 10),
+                                    SizedBox(width: 10),
                                     Text(
                                       DateFormat(
                                         'MMM dd',
@@ -312,7 +313,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
 
                   // Save Button
                   SizedBox(
@@ -331,7 +332,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       ),
                       child: Text(
                         _debtType == 'Give' ? "Save & Collect" : "Save & Pay",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -377,7 +378,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white54,
+            color: isSelected ? Colors.black : AppTheme.textSecondary(context),
             fontWeight: FontWeight.bold,
           ),
         ),

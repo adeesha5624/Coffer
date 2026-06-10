@@ -52,7 +52,7 @@ class PinHelper {
       // 5 wrong attempts → lock for 30 seconds
       if (attempts >= maxAttempts) {
         final lockUntil = DateTime.now()
-            .add(const Duration(seconds: lockDurationSeconds))
+            .add(Duration(seconds: lockDurationSeconds))
             .millisecondsSinceEpoch;
         await prefs.setInt(_lockTimeKey, lockUntil);
       }

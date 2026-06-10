@@ -116,8 +116,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           recDate = DateTime.now();
         }
         
-        bool isAfterFrom = recDate.isAfter(_dateFrom.subtract(const Duration(days: 1)));
-        bool isBeforeTo = recDate.isBefore(_dateTo.add(const Duration(days: 1)));
+        bool isAfterFrom = recDate.isAfter(_dateFrom.subtract(Duration(days: 1)));
+        bool isBeforeTo = recDate.isBefore(_dateTo.add(Duration(days: 1)));
         bool dateMatch = isAfterFrom && isBeforeTo;
 
         bool textMatch = true;
@@ -241,13 +241,13 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Net Worth Analytics", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Net Worth Analytics", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator())
           : Column(
               children: [
@@ -267,7 +267,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                       Text("Current Net Worth",
                           style:
                               TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.38), fontSize: 13)),
-                      const SizedBox(height: 5),
+                      SizedBox(height: 5),
                       Text(
                         "Rs. ${_currentNetWorth.toStringAsFixed(2)}",
                         style: TextStyle(
@@ -351,7 +351,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                         Padding(
                           padding: const EdgeInsets.only(right: 10),
                           child: ActionChip(
-                            label: const Text('Custom'),
+                            label: Text('Custom'),
                             avatar: Icon(Icons.date_range, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
                             backgroundColor: Theme.of(context).cardColor,
                             labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
@@ -462,7 +462,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                    color: const Color(0xFF1E293B),
+                                    color: Theme.of(context).cardColor,
                                     borderRadius: BorderRadius.circular(18)),
                                 child: Row(
                                   children: [
@@ -476,7 +476,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                                           color: amtColor,
                                           size: 18),
                                     ),
-                                    const SizedBox(width: 15),
+                                    SizedBox(width: 15),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:

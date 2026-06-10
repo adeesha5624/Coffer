@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pin_helper.dart';
@@ -44,7 +45,7 @@ class _PinScreenState extends State<PinScreen>
   void initState() {
     super.initState();
     _shakeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 500),
       vsync: this,
     );
     _shakeAnimation = Tween<double>(
@@ -85,7 +86,7 @@ class _PinScreenState extends State<PinScreen>
 
   void _startLockTimer() {
     _lockTimer?.cancel();
-    _lockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _lockTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _remainingSeconds--;
         if (_remainingSeconds <= 0) {
@@ -114,7 +115,7 @@ class _PinScreenState extends State<PinScreen>
     setState(() => _enteredPin += key);
 
     if (_enteredPin.length == 4) {
-      Future.delayed(const Duration(milliseconds: 200), () {
+      Future.delayed(Duration(milliseconds: 200), () {
         if (widget.mode == PinMode.setup) {
           _handleSetupPin();
         } else {
@@ -137,7 +138,7 @@ class _PinScreenState extends State<PinScreen>
       if (_enteredPin == _confirmPin) {
         await PinHelper.savePin(_enteredPin);
         setState(() => _showSuccess = true);
-        await Future.delayed(const Duration(milliseconds: 600));
+        await Future.delayed(Duration(milliseconds: 600));
         if (!mounted) return;
         _navigateToDashboard();
       } else {
@@ -149,7 +150,7 @@ class _PinScreenState extends State<PinScreen>
         });
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("PINs don't match! Try again."),
             backgroundColor: Colors.redAccent,
           ),
@@ -163,7 +164,7 @@ class _PinScreenState extends State<PinScreen>
 
     if (isCorrect) {
       setState(() => _showSuccess = true);
-      await Future.delayed(const Duration(milliseconds: 600));
+      await Future.delayed(Duration(milliseconds: 600));
       if (!mounted) return;
       _navigateToDashboard();
     } else {
@@ -202,7 +203,7 @@ class _PinScreenState extends State<PinScreen>
   void _navigateToDashboard() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+      MaterialPageRoute(builder: (context) => OnboardingScreen()),
     );
   }
 
@@ -215,18 +216,18 @@ class _PinScreenState extends State<PinScreen>
       body: SafeArea(
         child: Column(
           children: [
-            const Spacer(flex: 2),
+            Spacer(flex: 2),
 
             // 🔐 Lock icon with glow
             AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: Duration(milliseconds: 300),
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: _showSuccess
-                        ? [Colors.greenAccent, const Color(0xFF00E676)]
+                        ? [Colors.greenAccent, Color(0xFF00E676)]
                         : [
                             Colors.cyanAccent.withValues(alpha: 0.2),
                             Colors.cyanAccent.withValues(alpha: 0.05),
@@ -250,7 +251,7 @@ class _PinScreenState extends State<PinScreen>
               ),
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
 
             // Title
             Text(
@@ -259,7 +260,7 @@ class _PinScreenState extends State<PinScreen>
                   : isSetup
                   ? (_isConfirming ? "Confirm Your PIN" : "Create a PIN")
                   : "Enter Your PIN",
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -267,7 +268,7 @@ class _PinScreenState extends State<PinScreen>
               ),
             ),
 
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
 
             // Subtitle
             Text(
@@ -279,12 +280,12 @@ class _PinScreenState extends State<PinScreen>
                         : "Set a 4-digit PIN for quick access")
                   : "Enter your 4-digit PIN to continue",
               style: TextStyle(
-                color: _isLocked ? Colors.redAccent : Colors.white38,
+                color: _isLocked ? Colors.redAccent : AppTheme.textMuted(context),
                 fontSize: 13,
               ),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
 
             // 🔴🔴🔴🔴 PIN dots
             AnimatedBuilder(
@@ -306,7 +307,7 @@ class _PinScreenState extends State<PinScreen>
                 children: List.generate(4, (index) {
                   final isFilled = index < _enteredPin.length;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 200),
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     width: isFilled ? 20 : 16,
                     height: isFilled ? 20 : 16,
@@ -347,16 +348,16 @@ class _PinScreenState extends State<PinScreen>
                 padding: const EdgeInsets.only(top: 15),
                 child: Text(
                   "${PinHelper.maxAttempts - _wrongAttempts} attempts remaining",
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                  style: TextStyle(color: Colors.redAccent, fontSize: 12),
                 ),
               ),
 
-            const Spacer(flex: 1),
+            Spacer(flex: 1),
 
             // 🔢 Numeric Keypad
             _buildKeypad(),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // Forgot PIN? link (only in login mode)
             if (!isSetup)
@@ -369,20 +370,20 @@ class _PinScreenState extends State<PinScreen>
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      title: const Text(
+                      title: Text(
                         "Forgot PIN?",
                         style: TextStyle(color: Colors.white),
                       ),
-                      content: const Text(
+                      content: Text(
                         "PIN clear කරලා Google/WhatsApp වලින් අලුතෙන් login වෙන්න වෙනවා.",
-                        style: TextStyle(color: Colors.white60),
+                        style: TextStyle(color: AppTheme.textSecondary(context)),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text(
+                          child: Text(
                             "Cancel",
-                            style: TextStyle(color: Colors.white38),
+                            style: TextStyle(color: AppTheme.textMuted(context)),
                           ),
                         ),
                         ElevatedButton(
@@ -390,7 +391,7 @@ class _PinScreenState extends State<PinScreen>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
                           ),
-                          child: const Text("Reset PIN"),
+                          child: Text("Reset PIN"),
                         ),
                       ],
                     ),
@@ -403,7 +404,7 @@ class _PinScreenState extends State<PinScreen>
                     }
                   }
                 },
-                child: const Text(
+                child: Text(
                   "Forgot PIN?",
                   style: TextStyle(
                     color: Colors.cyanAccent,
@@ -413,7 +414,7 @@ class _PinScreenState extends State<PinScreen>
                 ),
               ),
 
-            const Spacer(flex: 1),
+            Spacer(flex: 1),
           ],
         ),
       ),
@@ -438,7 +439,7 @@ class _PinScreenState extends State<PinScreen>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: row.map((key) {
                 if (key.isEmpty) {
-                  return const SizedBox(width: 70, height: 70);
+                  return SizedBox(width: 70, height: 70);
                 }
                 return _buildKeyButton(key);
               }).toList(),
@@ -456,7 +457,7 @@ class _PinScreenState extends State<PinScreen>
     return GestureDetector(
       onTap: isDisabled ? null : () => _onKeyTap(key),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: Duration(milliseconds: 150),
         width: 70,
         height: 70,
         decoration: BoxDecoration(
@@ -474,7 +475,7 @@ class _PinScreenState extends State<PinScreen>
           child: isDelete
               ? Icon(
                   Icons.backspace_outlined,
-                  color: isDisabled ? Colors.white12 : Colors.white54,
+                  color: isDisabled ? Colors.white12 : AppTheme.textSecondary(context),
                   size: 22,
                 )
               : Text(

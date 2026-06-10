@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -25,7 +26,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   int _totalCount = 0;
 
   // 📅 Date Range
-  DateTime _dateFrom = DateTime.now().subtract(const Duration(days: 30));
+  DateTime _dateFrom = DateTime.now().subtract(Duration(days: 30));
   DateTime _dateTo = DateTime.now();
   String _selectedPeriod = 'Month'; // Today, Week, Month, Custom
 
@@ -76,7 +77,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             colorScheme: Theme.of(context).colorScheme.copyWith(
               primary: Theme.of(context).brightness == Brightness.dark
                   ? Colors.cyanAccent
-                  : const Color(0xFF00ADB5),
+                  : Color(0xFF00ADB5),
               onPrimary: Colors.black,
               surface: Theme.of(context).cardColor,
               onSurface: Theme.of(context).textTheme.bodyLarge?.color,
@@ -364,20 +365,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryTextColor = isDark
         ? Colors.white
-        : const Color(0xFF0F172A);
+        : Color(0xFF0F172A);
     final Color secondaryTextColor = isDark
-        ? Colors.white70
-        : const Color(0xFF334155);
+        ? AppTheme.textSecondary(context)
+        : Color(0xFF334155);
     final Color mutedTextColor = isDark
-        ? Colors.white38
-        : const Color(0xFF64748B);
+        ? AppTheme.textMuted(context)
+        : Color(0xFF64748B);
     final Color containerBg = isDark
-        ? const Color(0xFF1E293B)
-        : const Color(0xFFF1F5F9);
-    final Color itemTileBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+        ? Theme.of(context).cardColor
+        : Color(0xFFF1F5F9);
+    final Color itemTileBg = isDark ? Color(0xFF0F172A) : Colors.white;
     final Color accentColor = isDark
         ? Colors.cyanAccent
-        : const Color(0xFF00ADB5);
+        : Color(0xFF00ADB5);
     final Color searchIconColor = isDark ? Colors.black : Colors.white;
 
     return Scaffold(
@@ -458,7 +459,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     onSubmitted: (_) => _handleSearch(),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 GestureDetector(
                   onTap: _handleSearch,
                   child: Container(
@@ -477,7 +478,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ],
             ),
 
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
 
             // 📅 Date Range Row
             Row(
@@ -506,7 +507,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             color: accentColor,
                             size: 14,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateFrom),
                             style: TextStyle(
@@ -551,7 +552,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             color: accentColor,
                             size: 14,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
                             DateFormat('MMM dd').format(_dateTo),
                             style: TextStyle(
@@ -568,7 +569,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ],
             ),
 
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
 
             // 📅 Quick Period Chips
             Row(
@@ -601,7 +602,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             color: isSelected
                                 ? (isDark
                                       ? Colors.cyanAccent
-                                      : const Color(0xFF00ADB5))
+                                      : Color(0xFF00ADB5))
                                 : mutedTextColor,
                             fontSize: 11,
                             fontWeight: isSelected
@@ -616,7 +617,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               }).toList(),
             ),
 
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
 
             // Results Area
             _isLoading
@@ -638,7 +639,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                       : Colors.black.withValues(alpha: 0.05),
                                   size: 80,
                                 ),
-                                const SizedBox(height: 15),
+                                SizedBox(height: 15),
                                 Text(
                                   "Search by Friend Name\nwith date filters to view reports",
                                   textAlign: TextAlign.center,
@@ -676,7 +677,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           color: accentColor,
                                           size: 18,
                                         ),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: 8),
                                         Text(
                                           _currentQuery.isNotEmpty
                                               ? "Analytics for '$_currentQuery'"
@@ -687,7 +688,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        const Spacer(),
+                                        Spacer(),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
@@ -706,7 +707,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                             style: TextStyle(
                                               color: isDark
                                                   ? Colors.cyanAccent
-                                                  : const Color(0xFF00ADB5),
+                                                  : Color(0xFF00ADB5),
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -714,7 +715,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 14),
+                                    SizedBox(height: 14),
 
                                     Row(
                                       children: [
@@ -724,14 +725,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           Colors.redAccent,
                                           Icons.arrow_upward_rounded,
                                         ),
-                                        const SizedBox(width: 10),
+                                        SizedBox(width: 10),
                                         _buildStatItem(
                                           "Taken",
                                           "Rs. ${_totalTaken.toStringAsFixed(0)}",
                                           Colors.greenAccent,
                                           Icons.arrow_downward_rounded,
                                         ),
-                                        const SizedBox(width: 10),
+                                        SizedBox(width: 10),
                                         _buildStatItem(
                                           "Net",
                                           "Rs. ${_netBalance.toStringAsFixed(0)}",
@@ -748,7 +749,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
 
                               // 📋 Results List
                               Expanded(
@@ -802,7 +803,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                               size: 16,
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
+                                          SizedBox(width: 12),
 
                                           Expanded(
                                             child: Column(
@@ -818,7 +819,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                     fontSize: 14,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 3),
+                                                SizedBox(height: 3),
                                                 Row(
                                                   children: [
                                                     Container(
@@ -854,7 +855,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                         row['reason']
                                                             .toString()
                                                             .isNotEmpty) ...[
-                                                      const SizedBox(width: 6),
+                                                      SizedBox(width: 6),
                                                       Container(
                                                         padding:
                                                             const EdgeInsets.symmetric(
@@ -866,7 +867,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                               (isDark
                                                                       ? Colors
                                                                             .cyanAccent
-                                                                      : const Color(
+                                                                      : Color(
                                                                           0xFF00ADB5,
                                                                         ))
                                                                   .withValues(
@@ -883,7 +884,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                             color: isDark
                                                                 ? Colors
                                                                       .cyanAccent
-                                                                : const Color(
+                                                                : Color(
                                                                     0xFF00ADB5,
                                                                   ),
                                                             fontSize: 10,
@@ -914,7 +915,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
 
                               // 📄 PDF Generate Button
                               SizedBox(
@@ -933,8 +934,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                   ),
-                                  icon: const Icon(Icons.picture_as_pdf),
-                                  label: const Text(
+                                  icon: Icon(Icons.picture_as_pdf),
+                                  label: Text(
                                     "Download PDF Statement",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -967,7 +968,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         child: Column(
           children: [
             Icon(icon, color: color, size: 16),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
@@ -976,7 +977,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 fontSize: 12,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(

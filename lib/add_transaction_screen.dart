@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 
@@ -57,7 +58,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final amountStr = _amountController.text.trim();
     if (amountStr.isEmpty || _selectedFromAccountId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all required fields")),
+        SnackBar(content: Text("Please fill all required fields")),
       );
       return;
     }
@@ -65,7 +66,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final amount = double.tryParse(amountStr) ?? 0.0;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid amount greater than 0")),
+        SnackBar(content: Text("Please enter a valid amount greater than 0")),
       );
       return;
     }
@@ -75,7 +76,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (_selectedToAccountId == null ||
           _selectedFromAccountId == _selectedToAccountId) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content:
                   Text("Please select two different accounts for transfer")),
         );
@@ -118,7 +119,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Record",
+        title: Text("Add Record",
             style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
@@ -165,16 +166,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 25),
+            SizedBox(height: 25),
 
             // --- 2. AMOUNT INPUT ---
             Text("Amount (Rs.)",
                 style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
@@ -193,34 +194,34 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 hintText: "0.00",
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // --- 3. FROM ACCOUNT DROPDOWN ---
             Text(
                 _selectedType == 'Transfer' ? "From Account" : "Select Account",
-                style: const TextStyle(color: Colors.white54, fontSize: 13)),
-            const SizedBox(height: 8),
+                style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13)),
+            SizedBox(height: 8),
             _buildAccountDropdown(_selectedFromAccountId, (val) {
               setState(() => _selectedFromAccountId = val);
             }),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // --- 4. 💡 TO ACCOUNT DROPDOWN (Transfer එකක් නම් විතරක් පෙනේ) ---
             if (_selectedType == 'Transfer') ...[
               Text("To Account",
                   style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _buildAccountDropdown(_selectedToAccountId, (val) {
                 setState(() => _selectedToAccountId = val);
               }),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
 
             // --- 5. CATEGORY DROPDOWN (Transfer වලට ඕන නෑ) ---
             if (_selectedType != 'Transfer') ...[
               Text("Category",
                   style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 dropdownColor: Theme.of(context).cardColor,
@@ -248,14 +249,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 }).toList(),
                 onChanged: (val) => setState(() => _selectedCategory = val!),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
 
             // --- 6. DESCRIPTION ---
             if (_selectedType != 'Transfer') ...[
               Text("Description (Optional)",
                   style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               TextField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
@@ -276,7 +277,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   hintText: "Notes...",
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
             ],
 
             // --- 7. SAVE BUTTON ---
@@ -291,7 +292,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
-                child: const Text("Save Record",
+                child: Text("Save Record",
                     style:
                         TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),

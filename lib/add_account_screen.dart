@@ -25,7 +25,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Add New Account"),
+        title: Text("Add New Account"),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -35,22 +35,22 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Account Name", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7))),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             _buildTextField(_nameController, "e.g. HNB Bank, Commercial"),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             Text(
               "Initial Balance (Rs.)",
               style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7)),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             _buildTextField(_balanceController, "0.00", isNumber: true),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             Text("Account Type", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7))),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             _buildTypeDropdown(),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
 
             ElevatedButton(
               onPressed: () async {
@@ -61,7 +61,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 if (name.isEmpty) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter an account name')),
+                    SnackBar(content: Text('Please enter an account name')),
                   );
                   return;
                 }
@@ -76,7 +76,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.cyanAccent : Theme.of(context).primaryColor,
-                minimumSize: const Size(double.infinity, 60),
+                minimumSize: Size(double.infinity, 60),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -137,7 +137,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         value: _selectedType,
         dropdownColor: Theme.of(context).cardColor,
         isExpanded: true,
-        underline: const SizedBox(),
+        underline: SizedBox(),
         style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
         items: [
           'Bank',

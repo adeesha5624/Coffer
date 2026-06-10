@@ -1,3 +1,4 @@
+import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'add_debt_screen.dart';
@@ -99,7 +100,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (context) => Padding(
@@ -123,21 +124,21 @@ class _DebtListScreenState extends State<DebtListScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             Text(
               "Remaining Balance: Rs. ${debt['amount'].toStringAsFixed(2)}",
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white38
+                    ? AppTheme.textMuted(context)
                     : Colors.black54,
               ),
             ),
-            const SizedBox(height: 25),
-            const Text(
+            SizedBox(height: 25),
+            Text(
               "Amount to Settle",
               style: TextStyle(color: Colors.cyanAccent, fontSize: 12),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             TextField(
               controller: _settleAmountController,
               keyboardType: TextInputType.number,
@@ -150,12 +151,12 @@ class _DebtListScreenState extends State<DebtListScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF020617)
+                    ? Theme.of(context).scaffoldBackgroundColor
                     : Colors.grey[200],
                 prefixText: "Rs. ",
                 prefixStyle: TextStyle(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white70
+                      ? AppTheme.textSecondary(context)
                       : Colors.black87,
                 ),
                 border: OutlineInputBorder(
@@ -183,7 +184,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
             ElevatedButton(
               onPressed: () =>
                   _settleDebt(debt['id'], debt['amount'], debt['person_name']),
@@ -191,7 +192,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
                 backgroundColor: widget.initialType == 'Give'
                     ? Colors.greenAccent
                     : Colors.redAccent,
-                minimumSize: const Size(double.infinity, 60),
+                minimumSize: Size(double.infinity, 60),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -200,14 +201,14 @@ class _DebtListScreenState extends State<DebtListScreen> {
                 widget.initialType == 'Give'
                     ? "Confirm Collection"
                     : "Confirm Payment",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
           ],
         ),
       ),
@@ -277,7 +278,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
                             size: 18,
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +299,7 @@ class _DebtListScreenState extends State<DebtListScreen> {
                                   color:
                                       Theme.of(context).brightness ==
                                           Brightness.dark
-                                      ? Colors.white38
+                                      ? AppTheme.textMuted(context)
                                       : Colors.black54,
                                   fontSize: 11,
                                 ),
