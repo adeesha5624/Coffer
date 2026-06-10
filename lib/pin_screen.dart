@@ -203,7 +203,12 @@ class _PinScreenState extends State<PinScreen>
   void _navigateToDashboard() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => OnboardingScreen()),
+      MaterialPageRoute(
+        builder: (context) => OnboardingScreen(
+          onThemeChanged: widget.onThemeChanged,
+          isDarkMode: widget.isDarkMode,
+        ),
+      ),
     );
   }
 
