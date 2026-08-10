@@ -34,9 +34,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   double _toPay = 0.0;
 
   String _selectedChartType = 'Expense';
-  String _selectedTimePeriod = 'Weekly';
-  List<FlSpot> _chartSpots =
-      []; // 📊 චාර්ට් එකේ දත්ත සේව් කරන්න අලුත් ලිස්ට් එකක් හැදුවා මචං
+  String _selectedTimePeriod = 'Daily';
+  List<FlSpot> _chartSpots = [];
+  List<String> _chartLabels = [];
 
   @override
   void initState() {
@@ -66,57 +66,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     // 📊 --- Chart data preparation ---
-    final List<Map<String, dynamic>> allTransactions = await db.query(
-      'transactions',
-    );
-
+    final List<Map<String, dynamic>> allTransactions = await db.query('transactions');
     final DateTime now = DateTime.now();
-    // Start of current week (Monday)
-    final DateTime weekStart = now.subtract(Duration(days: now.weekday - 1));
 
-    // Chart x-axis: 5 points (1–5)
-    Map<int, double> periodValues = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0};
+    List<String> labels = [];
+    Map<int, double> periodValues = {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0};
+    final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    for (int i = 0; i < 6; i++) {
+      if (_selectedTimePeriod == 'Daily') {
+        DateTime d = now.subtract(Duration(days: 5 - i));
+        labels.add(dayNames[d.weekday - 1]);
+      } else if (_selectedTimePeriod == 'Weekly') {
+        labels.add('W${6 - i}');
+      } else if (_selectedTimePeriod == 'Monthly') {
+        int m = now.month - (5 - i);
+        while (m <= 0) {
+          m += 12;
+        }
+        labels.add(monthNames[m - 1]);
+      } else if (_selectedTimePeriod == 'Yearly') {
+        labels.add('${now.year - (5 - i)}');
+      }
+    }
 
     for (var tx in allTransactions) {
       String txType = tx['type'].toString();
       String txDateStr = tx['date'].toString();
       double txAmount = (tx['amount'] as num?)?.toDouble() ?? 0.0;
 
-      if (_selectedChartType != 'Net Worth' && txType != _selectedChartType) {
-        continue;
-      }
+      if (_selectedChartType != 'Net Worth' && txType != _selectedChartType) continue;
 
       try {
         DateTime txDate = DateTime.parse(txDateStr);
         int spotIndex = -1;
-
+        
         if (_selectedTimePeriod == 'Daily') {
-          // Only include transactions from the current week (Mon–Fri)
-          final bool isCurrentWeek =
-              txDate.isAfter(weekStart.subtract(Duration(days: 1))) &&
-              txDate.isBefore(weekStart.add(Duration(days: 7)));
-          if (!isCurrentWeek) continue;
-          spotIndex = txDate.weekday; // 1=Mon … 5=Fri (6,7 filtered below)
-          if (spotIndex > 5) continue; // skip Sat(6) and Sun(7)
+          int diff = now.difference(DateTime(txDate.year, txDate.month, txDate.day)).inDays;
+          if (diff >= 0 && diff <= 5) spotIndex = 5 - diff;
+        } else if (_selectedTimePeriod == 'Weekly') {
+          int diff = now.difference(txDate).inDays;
+          if (diff >= 0 && diff < 42) spotIndex = 5 - (diff ~/ 7);
         } else if (_selectedTimePeriod == 'Monthly') {
-          spotIndex = txDate.month; // 1 = Jan, 5 = May
+          int diffMonths = (now.year - txDate.year) * 12 + now.month - txDate.month;
+          if (diffMonths >= 0 && diffMonths <= 5) spotIndex = 5 - diffMonths;
         } else if (_selectedTimePeriod == 'Yearly') {
-          spotIndex = txDate.year - 2021; // 2022 -> 1, 2026 -> 5
-        } else {
-          // Weekly (W1 - W5)
-          spotIndex = ((txDate.day - 1) / 7).toInt() + 1;
+          int diffYears = now.year - txDate.year;
+          if (diffYears >= 0 && diffYears <= 5) spotIndex = 5 - diffYears;
         }
 
-        // දත්ත එකතු කිරීම සිදු කරනවා
         if (periodValues.containsKey(spotIndex)) {
           if (_selectedChartType == 'Net Worth') {
-            // Net worth එකට නම් Income එකතු කරලා Expense අඩු කරනවා
-            if (txType == 'Income') {
-              periodValues[spotIndex] = periodValues[spotIndex]! + txAmount;
-            }
-            if (txType == 'Expense') {
-              periodValues[spotIndex] = periodValues[spotIndex]! - txAmount;
-            }
+            if (txType == 'Income') periodValues[spotIndex] = periodValues[spotIndex]! + txAmount;
+            if (txType == 'Expense') periodValues[spotIndex] = periodValues[spotIndex]! - txAmount;
           } else {
             periodValues[spotIndex] = periodValues[spotIndex]! + txAmount;
           }
@@ -126,23 +129,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
 
-    // FlSpot ලිස්ට් එකක් බවට පරිවර්තනය කිරීම
     List<FlSpot> computedSpots = [];
     if (_selectedChartType == 'Net Worth') {
-      // Net worth ප්‍රස්ථාරය ඉස්සරහට ලස්සනට වැඩිවෙවී යන ප්‍රවණතාවයක් (Trend line) පෙන්වනවා
-      double currentRunning =
-          netWorth -
-          (periodValues[1]! +
-              periodValues[2]! +
-              periodValues[3]! +
-              periodValues[4]! +
-              periodValues[5]!);
-      for (int i = 1; i <= 5; i++) {
-        currentRunning += periodValues[i]!;
-        computedSpots.add(FlSpot(i.toDouble(), currentRunning));
+      double currentRunning = netWorth;
+      for (int i = 5; i >= 0; i--) {
+        currentRunning -= periodValues[i]!;
+      }
+      double running = currentRunning;
+      for (int i = 0; i < 6; i++) {
+        running += periodValues[i]!;
+        computedSpots.add(FlSpot(i.toDouble(), running));
       }
     } else {
-      for (int i = 1; i <= 5; i++) {
+      for (int i = 0; i < 6; i++) {
         computedSpots.add(FlSpot(i.toDouble(), periodValues[i]!));
       }
     }
@@ -152,24 +151,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _totalNetWorth = netWorth;
       _toCollect = collectSum;
       _toPay = paySum;
-      _chartSpots =
-          computedSpots; // 🎯 ඔන්න සජීවී දත්ත ටික ස්ටේට් එකට දැම්මා මචං
+      _chartSpots = computedSpots;
+      _chartLabels = labels;
     });
   }
 
-  // 🎯 චාර්ට් එකට Spots දත්ත ලබාදෙන ෆන්ක්ෂන් එක
-  List<FlSpot> _getChartSpots() {
-    if (_chartSpots.isEmpty) {
-      return [
-        FlSpot(1, 0.0),
-        FlSpot(2, 0.0),
-        FlSpot(3, 0.0),
-        FlSpot(4, 0.0),
-        FlSpot(5, 0.0),
-      ];
-    }
-    return _chartSpots;
-  }
 
   Color _getChartColor() {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -489,12 +475,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildDynamicLineChart() {
     Color chartColor = _getChartColor();
     bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Find min and max y to create good bounds for the chart
+    double minY = 0;
+    double maxY = 100;
+    if (_chartSpots.isNotEmpty) {
+      minY = _chartSpots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
+      maxY = _chartSpots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+      
+      // Ensure there's a margin so points don't clip at the borders
+      if (minY == maxY) {
+        maxY += 100;
+        if (minY > 0) minY -= 10;
+      } else {
+        double padding = (maxY - minY) * 0.2;
+        maxY += padding;
+        minY -= padding;
+      }
+    }
+    
     return Container(
-      padding: const EdgeInsets.fromLTRB(15, 15, 25, 15),
+      padding: const EdgeInsets.fromLTRB(15, 20, 20, 15),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: isDark ? null : Border.all(color: Colors.black26, width: 1),
+        border: isDark ? Border.all(color: Colors.white10, width: 1) : Border.all(color: Colors.black12, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 15,
+            offset: Offset(0, 5),
+          ),
+        ]
       ),
       child: Column(
         children: [
@@ -505,121 +517,146 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: EdgeInsets.only(left: 10),
                 child: Text(
                   "Overview",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
-              DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedChartType,
-                  dropdownColor: Theme.of(context).cardColor,
-                  style: TextStyle(
-                    color: chartColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+              Container(
+                height: 32,
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: chartColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedChartType,
+                    dropdownColor: Theme.of(context).cardColor,
+                    icon: Icon(Icons.arrow_drop_down, color: chartColor, size: 20),
+                    style: TextStyle(
+                      color: chartColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                    items: ['Expense', 'Income', 'Net Worth']
+                        .map(
+                          (String type) => DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() => _selectedChartType = newValue);
+                        _refreshData();
+                      }
+                    },
                   ),
-                  items: ['Expense', 'Income', 'Net Worth']
-                      .map(
-                        (String type) => DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() => _selectedChartType = newValue);
-                      _refreshData(); // 👈 ටයිප් එක මාරු කරපු ගමන් ඩේටාබේස් එකෙන් අලුත් දත්ත ගන්නවා මචං
-                    }
-                  },
                 ),
               ),
             ],
           ),
-          SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: ['Daily', 'Weekly', 'Monthly', 'Yearly'].map((period) {
-              bool isSelected = _selectedTimePeriod == period;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedTimePeriod = period);
-                  _refreshData(); // 👈 කාල සීමාව (Daily/Weekly) මාරු කරපු ගමන් චාර්ට් එක අප්ඩේට් කරනවා මචං
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? chartColor.withValues(alpha: 0.15)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSelected ? chartColor : Colors.transparent,
-                      width: 1,
+          SizedBox(height: 15),
+          Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: ['Daily', 'Weekly', 'Monthly', 'Yearly'].map((period) {
+                bool isSelected = _selectedTimePeriod == period;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedTimePeriod = period);
+                      _refreshData();
+                    },
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Theme.of(context).cardColor : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: isSelected ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ] : [],
+                      ),
+                      child: Center(
+                        child: Text(
+                          period,
+                          style: TextStyle(
+                            color: isSelected
+                                ? chartColor
+                                : Theme.of(context).textTheme.bodySmall?.color
+                                      ?.withValues(alpha: 0.6),
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    period,
-                    style: TextStyle(
-                      color: isSelected
-                          ? chartColor
-                          : Theme.of(context).textTheme.bodySmall?.color
-                                ?.withValues(alpha: 0.5),
-                      fontSize: 11,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
-          SizedBox(height: 25),
+          SizedBox(height: 30),
           SizedBox(
-            height: 180,
+            height: 200,
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false),
+                minX: 0,
+                maxX: 5,
+                minY: minY,
+                maxY: maxY,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: (maxY - minY) / 4 == 0 ? 1 : (maxY - minY) / 4,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      strokeWidth: 1,
+                      dashArray: [4, 4],
+                    );
+                  },
+                ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   show: true,
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 35,
+                      reservedSize: 45,
                       getTitlesWidget: (value, meta) {
-                        if (value == 0) {
-                          return Text(
-                            '0',
+                        if (value == minY || value == maxY) return const SizedBox.shrink();
+                        
+                        String text = '';
+                        if (value.abs() >= 1000000) {
+                          text = '${(value / 1000000).toStringAsFixed(1)}M';
+                        } else if (value.abs() >= 1000) {
+                          text = '${(value / 1000).toStringAsFixed(1)}k';
+                        } else {
+                          text = value.toInt().toString();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                            text,
                             style: TextStyle(
                               color: AppTheme.textMuted(context),
                               fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        }
-                        if (value >= 1000) {
-                          return Text(
-                            '${(value / 1000).toStringAsFixed(0)}k',
-                            style: TextStyle(
-                              color: AppTheme.textMuted(context),
-                              fontSize: 10,
-                            ),
-                          );
-                        }
-                        return Text(
-                          value.toInt().toString(),
-                          style: TextStyle(
-                            color: AppTheme.textMuted(context),
-                            fontSize: 10,
+                            textAlign: TextAlign.right,
                           ),
                         );
                       },
@@ -630,197 +667,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         int idx = value.toInt();
-                        if (_selectedTimePeriod == 'Daily') {
-                          switch (idx) {
-                            case 1:
-                              return Text(
-                                'Mon',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 2:
-                              return Text(
-                                'Tue',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 3:
-                              return Text(
-                                'Wed',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 4:
-                              return Text(
-                                'Thu',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 5:
-                              return Text(
-                                'Fri',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                          }
-                        } else if (_selectedTimePeriod == 'Monthly') {
-                          switch (idx) {
-                            case 1:
-                              return Text(
-                                'Jan',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 2:
-                              return Text(
-                                'Feb',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 3:
-                              return Text(
-                                'Mar',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 4:
-                              return Text(
-                                'Apr',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 5:
-                              return Text(
-                                'May',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                          }
-                        } else if (_selectedTimePeriod == 'Yearly') {
-                          switch (idx) {
-                            case 1:
-                              return Text(
-                                '2022',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 2:
-                              return Text(
-                                '2023',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 3:
-                              return Text(
-                                '2024',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 4:
-                              return Text(
-                                '2025',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 5:
-                              return Text(
-                                '2026',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                          }
-                        } else {
-                          switch (idx) {
-                            case 1:
-                              return Text(
-                                'W1',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 2:
-                              return Text(
-                                'W2',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 3:
-                              return Text(
-                                'W3',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 4:
-                              return Text(
-                                'W4',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                            case 5:
-                              return Text(
-                                'W5',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary(context),
-                                  fontSize: 10,
-                                ),
-                              );
-                          }
+                        if (idx >= 0 && idx < _chartLabels.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _chartLabels[idx],
+                              style: TextStyle(
+                                color: AppTheme.textSecondary(context),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
                         }
-                        return Text('');
+                        return const Text('');
                       },
                     ),
                   ),
                 ),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: _getChartSpots(),
+                    spots: _chartSpots.isEmpty ? [FlSpot(0,0), FlSpot(1,0), FlSpot(2,0), FlSpot(3,0), FlSpot(4,0), FlSpot(5,0)] : _chartSpots,
                     isCurved: true,
+                    curveSmoothness: 0.35,
                     color: chartColor,
                     barWidth: 4,
                     isStrokeCapRound: true,
-                    dotData: FlDotData(show: true),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: Theme.of(context).cardColor,
+                          strokeWidth: 3,
+                          strokeColor: chartColor,
+                        );
+                      },
+                    ),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          chartColor.withValues(alpha: 0.2),
+                          chartColor.withValues(alpha: 0.25),
                           chartColor.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
