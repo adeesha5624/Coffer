@@ -2,7 +2,7 @@ import 'app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pin_helper.dart';
-import 'onboarding_screen.dart';
+import 'dashboard_screen.dart';
 
 enum PinMode { setup, login }
 
@@ -204,7 +204,7 @@ class _PinScreenState extends State<PinScreen>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => OnboardingScreen(
+        builder: (context) => DashboardScreen(
           onThemeChanged: widget.onThemeChanged,
           isDarkMode: widget.isDarkMode,
         ),
