@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'database_helper.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final String initialType;
+  const AddTransactionScreen({super.key, this.initialType = 'Expense'});
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -40,6 +41,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedType = widget.initialType;
     _loadAccounts();
   }
 

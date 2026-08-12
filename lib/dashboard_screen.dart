@@ -394,6 +394,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               Row(
                 children: [
+                  _buildActionCard("Income", Icons.download_rounded, Colors.green, () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen(initialType: 'Income')));
+                    _refreshData();
+                  }),
+                  SizedBox(width: 10),
+                  _buildActionCard("Expense", Icons.upload_rounded, Colors.redAccent, () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen(initialType: 'Expense')));
+                    _refreshData();
+                  }),
+                  SizedBox(width: 10),
+                  _buildActionCard("Transfer", Icons.swap_horiz_rounded, Colors.blueAccent, () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen(initialType: 'Transfer')));
+                    _refreshData();
+                  }),
+                ],
+              ),
+              SizedBox(height: 15),
+
+              Row(
+                children: [
                   _buildDebtCard(
                     "To Collect",
                     _toCollect,
@@ -432,27 +452,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SizedBox(height: 100),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddTransactionScreen(),
-            ),
-          );
-          _refreshData();
-        },
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.cyanAccent
-            : Colors.indigoAccent,
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.black
-              : Colors.white,
-          size: 30,
         ),
       ),
     );
@@ -798,6 +797,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: amountColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(18),
+            border: isDark ? null : Border.all(color: Colors.black26, width: 1),
+            boxShadow: [
+              if (!isDark)
+                BoxShadow(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
