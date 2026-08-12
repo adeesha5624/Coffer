@@ -10,6 +10,7 @@ import 'account_details_screen.dart';
 import 'add_account_screen.dart';
 import 'net_worth_details_screen.dart';
 import 'reports_screen.dart';
+import 'transaction_reports_screen.dart';
 import 'pin_helper.dart';
 import 'login_screen.dart';
 
@@ -301,7 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: Icon(
               Icons.analytics_outlined,
               color: Theme.of(context).brightness == Brightness.dark
@@ -309,13 +310,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   : Colors.indigoAccent,
             ),
             tooltip: "Generate Reports",
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ReportsScreen()),
-              );
+            onSelected: (value) async {
+              if (value == 'transactions') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TransactionReportsScreen()),
+                );
+              } else if (value == 'debts') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ReportsScreen()),
+                );
+              }
               _refreshData();
             },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'transactions',
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long, size: 20),
+                    SizedBox(width: 10),
+                    Text('Transaction Reports'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'debts',
+                child: Row(
+                  children: [
+                    Icon(Icons.people_outline, size: 20),
+                    SizedBox(width: 10),
+                    Text('Debt Reports'),
+                  ],
+                ),
+              ),
+            ],
           ),
           IconButton(
             onPressed: () {

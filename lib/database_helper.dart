@@ -239,6 +239,39 @@ class DatabaseHelper {
     }
   }
 
+  /// Transaction search with date range, category, and account filter
+  Future<List<Map<String, dynamic>>> searchTransactionsByFilters({
+    String? category,
+    int? accountId,
+    required String dateFrom,
+    required String dateTo,
+  }) async {
+    final db = await instance.database;
+    String whereClause = 'date >= ? AND date <= ?';
+    List<dynamic> whereArgs = [dateFrom, dateTo];
+
+    if (category != null && category.trim().isNotEmpty && category != 'All') {
+      whereClause += ' AND category = ?';
+      whereArgs.add(category.trim());
+    }
+    
+    if (accountId != null && accountId != -1) {
+      whereClause += ' AND account_id = ?';
+      whereArgs.add(accountId);
+    }
+
+    // Join with accounts to get account name
+    final List<Map<String, dynamic>> results = await db.rawQuery('''
+      SELECT t.*, a.name as account_name 
+      FROM transactions t
+      LEFT JOIN accounts a ON t.account_id = a.id
+      WHERE $whereClause
+      ORDER BY t.date DESC
+    ''', whereArgs);
+
+    return results;
+  }
+
   /// Category/reason එකට match වෙන debts date range එකට analytics return කරනවා
   /// totalGiven, totalTaken, netBalance, count
   Future<Map<String, dynamic>> getCategoryAnalytics({
