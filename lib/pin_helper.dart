@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 🔐 PIN Helper — PIN save, verify, clear සහ lockout logic
+/// 🔐 PIN Helper — PIN save, verify, clear and lockout logic
 class PinHelper {
   static const String _pinKey = 'user_pin_hash';
   static const String _attemptsKey = 'pin_wrong_attempts';
@@ -10,29 +10,29 @@ class PinHelper {
   static const int maxAttempts = 5;
   static const int lockDurationSeconds = 30;
 
-  // SHA-256 hash generate කරනවා
+  // Generate SHA-256 hash
   static String _hashPin(String pin) {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  // ✅ PIN save කරනවා (hash කරලා)
+  // Save hashed PIN
   static Future<void> savePin(String pin) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_pinKey, _hashPin(pin));
-    // PIN set කරනකොට attempts reset කරනවා
+    // Reset attempts when saving PIN
     await prefs.setInt(_attemptsKey, 0);
     await prefs.remove(_lockTimeKey);
   }
 
-  // ✅ PIN set කරලා තියෙනවද check කරනවා
+  // Check if PIN has been set
   static Future<bool> hasPin() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.containsKey(_pinKey);
   }
 
-  // ✅ PIN verify කරනවා
+  // Verify entered PIN against stored hash
   static Future<bool> verifyPin(String pin) async {
     final prefs = await SharedPreferences.getInstance();
     final savedHash = prefs.getString(_pinKey);
@@ -60,7 +60,7 @@ class PinHelper {
     }
   }
 
-  // ✅ Lock වෙලාද check කරනවා
+  // Check if PIN entry is locked
   static Future<bool> isLocked() async {
     final prefs = await SharedPreferences.getInstance();
     final lockUntil = prefs.getInt(_lockTimeKey);
@@ -69,14 +69,14 @@ class PinHelper {
     if (DateTime.now().millisecondsSinceEpoch < lockUntil) {
       return true;
     } else {
-      // Lock time ඉවර — reset කරනවා
+      // Lock duration expired — reset attempts
       await prefs.setInt(_attemptsKey, 0);
       await prefs.remove(_lockTimeKey);
       return false;
     }
   }
 
-  // ✅ Lock එක ඉවර වෙන්න තව කොච්චර seconds ද
+  // Get remaining lock time in seconds
   static Future<int> getRemainingLockSeconds() async {
     final prefs = await SharedPreferences.getInstance();
     final lockUntil = prefs.getInt(_lockTimeKey);
@@ -86,13 +86,13 @@ class PinHelper {
     return remaining > 0 ? (remaining / 1000).ceil() : 0;
   }
 
-  // ✅ Wrong attempts ගණන ගන්නවා
+  // Get count of wrong attempts
   static Future<int> getWrongAttempts() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_attemptsKey) ?? 0;
   }
 
-  // ✅ PIN clear කරනවා (logout with clear PIN)
+  // Clear stored PIN (used during logout)
   static Future<void> clearPin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pinKey);

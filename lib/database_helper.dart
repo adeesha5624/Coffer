@@ -42,7 +42,7 @@ class DatabaseHelper {
     }
   }
 
-  // 💡 ඩේටාබේස් එක මුලින්ම හැදෙද්දී ඔක්කොම ටේබල් ටික නිවැරදිව ක්‍රියේට් කිරීම
+  // Initialize all database tables on first creation
   Future _onCreate(Database db, int version) async {
     // 1. Accounts Table
     await db.execute('''
@@ -81,7 +81,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 💡 Default Accounts දෙක ඇතුළත් කිරීම
+    // Insert default accounts
     await db.insert('accounts', {
       'name': 'Purse',
       'type': 'Cash',
@@ -119,21 +119,21 @@ class DatabaseHelper {
   }
 
   // ==========================================
-  // 🌐 GLOBAL SEARCH FUNCTION (පිළිවෙළට සකස් කළා)
+  // 🌐 GLOBAL SEARCH FUNCTION
   // ==========================================
 
-  // 🔍 Name හෝ Reason (Food/Transport) හරහා ණය දත්ත සර්ච් කිරීමේ Universal Query එක
+  // Universal query to search debt records by Person Name or Reason
   Future<List<Map<String, dynamic>>> searchGlobalHistory(String query) async {
     final db = await instance.database;
 
-    // %query% දාන්නේ වචනය මැද තිබුණත් (e.g., "Kema Food") ලස්සනට අහුවෙන්නයි
+    // Use %query% wildcard to match terms anywhere in the string
     String searchQuery = '%$query%';
 
     return await db.query(
       'debts',
       where: 'person_name LIKE ? OR reason LIKE ?',
       whereArgs: [searchQuery, searchQuery],
-      orderBy: 'date DESC', // අලුත්ම ගනුදෙනු උඩට එන්න සෙට් කරනවා
+      orderBy: 'date DESC', // Sort newest records first
     );
   }
 
@@ -141,7 +141,7 @@ class DatabaseHelper {
   // 🤝 TRANSFER & DEBTS FUNCTIONS
   // ==========================================
 
-  // 💡 එකවුන්ට් එකකින් තව එකකට සල්ලි මාරු කිරීමේ සුපිරිම Function එක
+  // Transfer money between accounts
   Future<void> addTransfer(
     int fromAccountId,
     int toAccountId,
@@ -151,19 +151,19 @@ class DatabaseHelper {
     final db = await instance.database;
 
     await db.transaction((txn) async {
-      // 1. සල්ලි කැපෙන එකවුන්ට් එකෙන් අඩු කරනවා
+      // 1. Deduct from source account
       await txn.rawUpdate(
         'UPDATE accounts SET balance = balance - ? WHERE id = ?',
         [amount, fromAccountId],
       );
 
-      // 2. සල්ලි වැටෙන එකවුන්ට් එකට එකතු කරනවා
+      // 2. Credit to destination account
       await txn.rawUpdate(
         'UPDATE accounts SET balance = balance + ? WHERE id = ?',
         [amount, toAccountId],
       );
 
-      // 3. පස්සේ ඉතිහාසය (History) බලන්න Transactions එකට Record එකක් දානවා
+      // 3. Insert transaction record for transfer history
       await txn.insert('transactions', {
         'amount': amount,
         'type': 'Transfer',
@@ -208,12 +208,103 @@ class DatabaseHelper {
     return await db.delete('debts', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> updateDebtReason(int id, String reason) async {
+    final db = await instance.database;
+    return await db.update(
+      'debts',
+      {'reason': reason},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Reset database to default state (clears all records and leaves default Purse and BOC accounts)
+  Future<void> resetDatabaseToDefaults() async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      await txn.delete('transactions');
+      await txn.delete('debts');
+      await txn.delete('accounts');
+      await txn.insert('accounts', {
+        'name': 'Purse',
+        'type': 'Cash',
+        'balance': 0.00,
+      });
+      await txn.insert('accounts', {
+        'name': 'BOC',
+        'type': 'Bank',
+        'balance': 0.00,
+      });
+    });
+  }
+
+  /// Restore all records from cloud into local SQLite database
+  Future<void> restoreAllData({
+    required List<Map<String, dynamic>> accounts,
+    required List<Map<String, dynamic>> transactions,
+    required List<Map<String, dynamic>> debts,
+  }) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      await txn.delete('transactions');
+      await txn.delete('debts');
+      await txn.delete('accounts');
+
+      for (var acc in accounts) {
+        await txn.insert('accounts', {
+          if (acc['id'] != null) 'id': acc['id'],
+          'name': acc['name'] ?? 'Account',
+          'type': acc['type'] ?? 'Cash',
+          'balance': (acc['balance'] as num?)?.toDouble() ?? 0.00,
+        });
+      }
+
+      if (accounts.isEmpty) {
+        await txn.insert('accounts', {
+          'name': 'Purse',
+          'type': 'Cash',
+          'balance': 0.00,
+        });
+        await txn.insert('accounts', {
+          'name': 'BOC',
+          'type': 'Bank',
+          'balance': 0.00,
+        });
+      }
+
+      for (var tx in transactions) {
+        await txn.insert('transactions', {
+          if (tx['id'] != null) 'id': tx['id'],
+          'amount': (tx['amount'] as num?)?.toDouble() ?? 0.00,
+          'type': tx['type'] ?? 'Expense',
+          'category': tx['category'] ?? 'General',
+          'date': tx['date'] ?? '',
+          'description': tx['description'] ?? '',
+          'account_id': tx['account_id'],
+        });
+      }
+
+      for (var debt in debts) {
+        await txn.insert('debts', {
+          if (debt['id'] != null) 'id': debt['id'],
+          'amount': (debt['amount'] as num?)?.toDouble() ?? 0.00,
+          'type': debt['type'] ?? 'Give',
+          'person_name': debt['person_name'] ?? '',
+          'reason': debt['reason'] ?? '',
+          'date': debt['date'] ?? '',
+          'status': debt['status'] ?? 'Pending',
+          'account_id': debt['account_id'],
+        });
+      }
+    });
+  }
+
   // ==========================================
   // 🔍 ADVANCED SEARCH & ANALYTICS
   // ==========================================
 
-  /// Name/Reason search + Date Range filter combine කරලා debts return කරනවා
-  /// query empty නම් date range එකට ඔක්කොම debts return කරනවා
+  /// Return debts filtered by Name/Reason search and Date Range
+  /// If query is empty, return all debts within date range
   Future<List<Map<String, dynamic>>> searchByDateRange({
     String? query,
     required String dateFrom,
@@ -272,7 +363,7 @@ class DatabaseHelper {
     return results;
   }
 
-  /// Category/reason එකට match වෙන debts date range එකට analytics return කරනවා
+  /// Return debt analytics matching category/reason within date range
   /// totalGiven, totalTaken, netBalance, count
   Future<Map<String, dynamic>> getCategoryAnalytics({
     required String category,
@@ -309,7 +400,7 @@ class DatabaseHelper {
     };
   }
 
-  /// Date range එකට ඔක්කොම debts, reason wise group කරලා totals return කරනවා
+  /// Group debts by reason and return totals within date range
   Future<List<Map<String, dynamic>>> getExpenseAnalyticsByCategory({
     required String dateFrom,
     required String dateTo,

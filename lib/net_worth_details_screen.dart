@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'sync_helper.dart';
 
 class NetWorthDetailsScreen extends StatefulWidget {
   final double totalNetWorth;
@@ -72,6 +73,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
       }
     });
     _loadAllWalletRecords();
+    SyncHelper.syncAllToCloud();
   }
 
   Future<void> _pickDateRange() async {
@@ -102,6 +104,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
         _selectedPeriod = 'Custom';
       });
       _loadAllWalletRecords();
+    SyncHelper.syncAllToCloud();
     }
   }
 
@@ -135,7 +138,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
     final db = await DatabaseHelper.instance.database;
     List<_GlobalRecord> temp = [];
 
-    // 1. Transactions ඇදලා ගැනීම
+    // 1. Fetch transactions
     final txData = await db.query('transactions');
     for (var row in txData) {
       double amt = (row['amount'] as num).toDouble();
@@ -152,12 +155,15 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
       ));
     }
 
-    // 2. ණය (Debts) ඇදලා ගැනීම
+    // 2. Fetch debts
     final debtData = await db.query('debts');
     for (var row in debtData) {
       double amt = (row['amount'] as num).toDouble();
       String type = row['type'] as String;
       String person = row['person_name'] as String;
+      String reason = row['reason'] != null ? (row['reason'] as String).trim() : '';
+      String personText = type == 'Take' ? "Borrowed from $person" : "Lent to $person";
+      String sub = reason.isNotEmpty ? "$personText ($reason)" : personText;
 
       temp.add(_GlobalRecord(
         id: row['id'] as int,
@@ -165,14 +171,14 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
         date: row['date'] as String,
         amount: amt,
         type: 'Debt',
-        subtitle: type == 'Take' ? "Borrowed from $person" : "Lent to $person",
+        subtitle: sub,
       ));
     }
 
-    // 3. දින අනුව Sort කිරීම
+    // 3. Sort by date descending
     temp.sort((a, b) => b.date.compareTo(a.date));
 
-    // 4. Net Worth එක ගණනය කිරීම
+    // 4. Calculate total net worth
     final accountData = await DatabaseHelper.instance.getAccounts();
     double netWorth = 0;
     for (var item in accountData) {
@@ -228,6 +234,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
     }
 
     _loadAllWalletRecords();
+    SyncHelper.syncAllToCloud();
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -403,7 +410,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                               key: Key("${rec.type}_${rec.id}_$index"),
                               direction: DismissDirection.endToStart,
 
-                              // 💡 මෙන්න මකන්න කලින් Confirm කරගන්න Pop-up එක අහන කෑල්ල
+                              // Confirmation dialog before deleting a statement
                               confirmDismiss: (direction) async {
                                 return await showDialog(
                                   context: context,

@@ -50,6 +50,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # පින්තූර හෝ Assets භාවිතා කරනවා නම් මේ පල්ලෙහායින් ඇඩ් කරන්න
+  # If using images or assets, add them below
   # assets:
   #   - assets/images/

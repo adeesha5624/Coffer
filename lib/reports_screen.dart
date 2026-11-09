@@ -147,187 +147,262 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Future<void> _generatePDFReport() async {
     if (_searchResults.isEmpty) return;
 
+    // Filter out records with 0 or -0 and keep only active non-zero balances
+    final validDebts = _searchResults.where((row) {
+      final amt = (row['amount'] as num?)?.toDouble() ?? 0.0;
+      return amt.abs() > 0.001;
+    }).toList();
+
+    if (validDebts.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "No debts with active balance found to generate report.",
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    double pdfGiven = 0.0;
+    double pdfTaken = 0.0;
+    for (var row in validDebts) {
+      double amt = (row['amount'] as num?)?.toDouble() ?? 0.0;
+      if (row['type'] == 'Give') {
+        pdfGiven += amt;
+      } else {
+        pdfTaken += amt;
+      }
+    }
+    double pdfNetBalance = pdfTaken - pdfGiven;
+
     final pdf = pw.Document();
     final dateRange =
         "${DateFormat('MMM dd, yyyy').format(_dateFrom)} - ${DateFormat('MMM dd, yyyy').format(_dateTo)}";
 
+    // Use MultiPage so data dynamically flows across multiple pages
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Padding(
-            padding: const pw.EdgeInsets.all(20),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+        margin: const pw.EdgeInsets.all(25),
+        header: (pw.Context context) {
+          return pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 12),
+            padding: const pw.EdgeInsets.only(bottom: 6),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(color: PdfColors.blue900, width: 1.5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  "UNIVERSAL WALLET - TRANSACTION REPORT",
+                  "COFFER - DEBT & LOAN REPORT",
                   style: pw.TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
                     fontWeight: pw.FontWeight.bold,
                     color: PdfColors.blue900,
                   ),
                 ),
-                pw.SizedBox(height: 5),
                 pw.Text(
-                  "Generated: ${DateTime.now().toString().split(' ').first}",
+                  dateRange,
                   style: const pw.TextStyle(
+                    fontSize: 9,
                     color: PdfColors.grey700,
-                    fontSize: 11,
-                  ),
-                ),
-                pw.Text(
-                  "Period: $dateRange",
-                  style: const pw.TextStyle(
-                    color: PdfColors.grey700,
-                    fontSize: 11,
-                  ),
-                ),
-                if (_currentQuery.isNotEmpty)
-                  pw.Text(
-                    "Search: \"$_currentQuery\"",
-                    style: const pw.TextStyle(
-                      color: PdfColors.blue800,
-                      fontSize: 11,
-                    ),
-                  ),
-                pw.Divider(thickness: 1.5, color: PdfColors.blue900),
-                pw.SizedBox(height: 15),
-
-                pw.Container(
-                  padding: const pw.EdgeInsets.all(15),
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.grey200,
-                    borderRadius: pw.BorderRadius.circular(10),
-                  ),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            "Total Given: Rs. ${_totalGiven.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 11,
-                              color: PdfColors.red800,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                          pw.Text(
-                            "Total Taken: Rs. ${_totalTaken.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 11,
-                              color: PdfColors.green800,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            "Net Balance:",
-                            style: const pw.TextStyle(
-                              fontSize: 12,
-                              color: PdfColors.grey700,
-                            ),
-                          ),
-                          pw.Text(
-                            "${_netBalance >= 0 ? '+' : ''} Rs. ${_netBalance.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 18,
-                              fontWeight: pw.FontWeight.bold,
-                              color: _netBalance >= 0
-                                  ? PdfColors.green800
-                                  : PdfColors.red800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                pw.SizedBox(height: 20),
-
-                pw.Text(
-                  "Transactions ($_totalCount records)",
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 10),
-
-                pw.Table(
-                  border: pw.TableBorder.all(
-                    color: PdfColors.grey400,
-                    width: 0.5,
-                  ),
-                  children: [
-                    pw.TableRow(
-                      decoration: const pw.BoxDecoration(
-                        color: PdfColors.blue900,
-                      ),
-                      children: [
-                        _pdfHeader("Date"),
-                        _pdfHeader("Name"),
-                        _pdfHeader("Type"),
-                        _pdfHeader("Reason"),
-                        _pdfHeader("Amount"),
-                      ],
-                    ),
-                    ..._searchResults.map((row) {
-                      double amt = (row['amount'] as num).toDouble();
-                      bool isTake = row['type'] == 'Take';
-                      return pw.TableRow(
-                        children: [
-                          _pdfCell(row['date'].toString()),
-                          _pdfCell(row['person_name'].toString()),
-                          _pdfCell(isTake ? "Taken" : "Given"),
-                          _pdfCell(row['reason'] ?? '-'),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(8),
-                            child: pw.Text(
-                              "${isTake ? '+' : '-'} ${amt.toStringAsFixed(0)}",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: isTake
-                                    ? PdfColors.green800
-                                    : PdfColors.red800,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ],
-                ),
-
-                pw.Spacer(),
-                pw.Divider(color: PdfColors.grey300),
-                pw.Center(
-                  child: pw.Text(
-                    "Thank you for using Universal Wallet App",
-                    style: const pw.TextStyle(
-                      fontSize: 10,
-                      color: PdfColors.grey500,
-                    ),
                   ),
                 ),
               ],
             ),
           );
         },
+        footer: (pw.Context context) {
+          return pw.Container(
+            margin: const pw.EdgeInsets.only(top: 10),
+            padding: const pw.EdgeInsets.only(top: 6),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "Generated: ${DateTime.now().toString().split('.').first}",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey500,
+                  ),
+                ),
+                pw.Text(
+                  "Page ${context.pageNumber} of ${context.pagesCount}",
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        build: (pw.Context context) => [
+          // Period & Query details
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "Period: $dateRange",
+                    style: const pw.TextStyle(
+                      color: PdfColors.grey700,
+                      fontSize: 10,
+                    ),
+                  ),
+                  if (_currentQuery.isNotEmpty)
+                    pw.Text(
+                      "Filter: \"$_currentQuery\"",
+                      style: const pw.TextStyle(
+                        color: PdfColors.blue800,
+                        fontSize: 10,
+                      ),
+                    ),
+                ],
+              ),
+              pw.Text(
+                "Active Records: ${validDebts.length}",
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.grey800,
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+
+          // Summary Box
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey200,
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Total Given (To Collect): Rs. ${pdfGiven.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.red800,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 3),
+                    pw.Text(
+                      "Total Taken (To Pay): Rs. ${pdfTaken.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.green800,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      "Net Balance:",
+                      style: const pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.grey700,
+                      ),
+                    ),
+                    pw.Text(
+                      "${pdfNetBalance >= 0 ? '+' : ''} Rs. ${pdfNetBalance.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                        color: pdfNetBalance >= 0
+                            ? PdfColors.green800
+                            : PdfColors.red800,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 15),
+
+          // Multi-page Table with repeating headers
+          pw.TableHelper.fromTextArray(
+            headers: ["Date", "Name", "Type", "Reason / Description", "Amount"],
+            data: validDebts.map((row) {
+              final double amt = (row['amount'] as num).toDouble();
+              final bool isTake = row['type'] == 'Take';
+              final String sign = isTake ? "+" : "-";
+              final String reasonStr =
+                  (row['reason'] != null &&
+                          row['reason'].toString().trim().isNotEmpty)
+                      ? row['reason'].toString().trim()
+                      : '-';
+              return [
+                row['date']?.toString().split(' ').first ?? '',
+                row['person_name']?.toString() ?? '',
+                isTake ? "Taken (To Pay)" : "Given (To Collect)",
+                reasonStr,
+                "$sign Rs. ${amt.toStringAsFixed(2)}",
+              ];
+            }).toList(),
+            headerStyle: pw.TextStyle(
+              color: PdfColors.white,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 9,
+            ),
+            headerDecoration: const pw.BoxDecoration(
+              color: PdfColors.blue900,
+            ),
+            headerHeight: 24,
+            cellHeight: 22,
+            cellStyle: const pw.TextStyle(fontSize: 8.5),
+            cellPadding: const pw.EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: 4,
+            ),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              1: pw.Alignment.centerLeft,
+              2: pw.Alignment.centerLeft,
+              3: pw.Alignment.centerLeft,
+              4: pw.Alignment.centerRight,
+            },
+            rowDecoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+              ),
+            ),
+          ),
+        ],
       ),
     );
 
     try {
       final fileName = _currentQuery.isNotEmpty
-          ? "Report_${_currentQuery}_${DateFormat('yyyyMMdd').format(_dateFrom)}"
-          : "Report_${DateFormat('yyyyMMdd').format(_dateFrom)}_${DateFormat('yyyyMMdd').format(_dateTo)}";
+          ? "DebtReport_${_currentQuery}_${DateFormat('yyyyMMdd').format(_dateFrom)}"
+          : "DebtReport_${DateFormat('yyyyMMdd').format(_dateFrom)}_${DateFormat('yyyyMMdd').format(_dateTo)}";
 
       await Printing.sharePdf(
         bytes: await pdf.save(),
@@ -338,30 +413,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  pw.Widget _pdfHeader(String text) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(
-          color: PdfColors.white,
-          fontWeight: pw.FontWeight.bold,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
-  pw.Widget _pdfCell(String text) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(text, style: const pw.TextStyle(fontSize: 10)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    // 🌓 ඩාර්ක් මෝඩ් ද නැද්ද කියලා මෙතනින් චෙක් කරලා Dynamic Colors සෙට් කරනවා මචං
+    // Check theme mode and configure dynamic colors
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryTextColor = isDark
         ? Colors.white
@@ -384,7 +438,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        // 🎯 1. AppBar Title එක ලයිට් මෝඩ් එකේදී කළු පාටට හැරෙනවා මචං
+        // 1. AppBar Title color in light mode
         title: Text(
           "Universal Reports",
           style: TextStyle(
@@ -395,7 +449,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: primaryTextColor,
-        // 🎯 2. Back Arrow එකත් ලයිට් මෝඩ් එකේදී කළු පාට වෙනවා
+        // 2. Back button color in light mode
         iconTheme: IconThemeData(color: primaryTextColor),
       ),
       body: Padding(
@@ -408,7 +462,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    // 🎯 3. ටයිප් කරන අකුරු වල පාට මෝඩ් එක අනුව ඔටෝම හැරෙනවා
+                    // 3. Text field input color adapts to theme mode
                     style: TextStyle(color: primaryTextColor),
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.manage_search, color: accentColor),
@@ -494,7 +548,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            containerBg, // 🎯 4. ඩාර්ක්/ලයිට් අනුව මාරු වෙන පසුබිම
+                            containerBg, // 4. Background color adapts to dark/light mode
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: accentColor.withValues(alpha: 0.2),
@@ -597,7 +651,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       child: Center(
                         child: Text(
                           period,
-                          // 🎯 5. "Today, Week, All" අකුරු ලයිට් මෝඩ් එකේදීත් ලස්සනට පේනවා මචං
+                          // 5. Filter tab label styling
                           style: TextStyle(
                             color: isSelected
                                 ? (isDark
@@ -767,7 +821,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
                                         color:
-                                            itemTileBg, // 🎯 6. List Items වල Background එක ලයිට් මෝඩ් එකේ සුදු වෙනවා මචං
+                                            itemTileBg, // 6. List item tile background adapts to light/dark mode
                                         borderRadius: BorderRadius.circular(14),
                                         border: Border.all(
                                           color: isDark
@@ -814,7 +868,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                                   "${row['person_name']}",
                                                   style: TextStyle(
                                                     color:
-                                                        primaryTextColor, // 🎯 7. යාළුවන්ගේ නම් ලස්සනට කළු පාටින් පේනවා
+                                                        primaryTextColor, // 7. Person name text color
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 14,
                                                   ),
@@ -899,11 +953,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                           ),
 
                                           Text(
-                                            "${isTake ? '+' : '-'} Rs. ${amt.toStringAsFixed(0)}",
+                                            amt == 0
+                                                ? "Settled (Rs. 0)"
+                                                : "${isTake ? '+' : '-'} Rs. ${amt.toStringAsFixed(0)}",
                                             style: TextStyle(
-                                              color: isTake
-                                                  ? Colors.greenAccent
-                                                  : Colors.redAccent,
+                                              color: amt == 0
+                                                  ? AppTheme.textMuted(context)
+                                                  : (isTake
+                                                      ? Colors.greenAccent
+                                                      : Colors.redAccent),
                                               fontWeight: FontWeight.bold,
                                               fontSize: 14,
                                             ),

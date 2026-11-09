@@ -127,14 +127,14 @@ class _PinScreenState extends State<PinScreen>
 
   Future<void> _handleSetupPin() async {
     if (!_isConfirming) {
-      // පළවෙනි වතාවේ PIN enter කරනවා
+      // First PIN entry (initial)
       setState(() {
         _confirmPin = _enteredPin;
         _enteredPin = '';
         _isConfirming = true;
       });
     } else {
-      // දෙවෙනි වතාවේ confirm කරනවා
+      // Second PIN entry (confirmation)
       if (_enteredPin == _confirmPin) {
         await PinHelper.savePin(_enteredPin);
         setState(() => _showSuccess = true);

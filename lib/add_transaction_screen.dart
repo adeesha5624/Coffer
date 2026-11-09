@@ -1,6 +1,7 @@
 import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'sync_helper.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final String initialType;
@@ -15,10 +16,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _descriptionController = TextEditingController();
 
   String _selectedType =
-      'Expense'; // Expense, Income, Transfer 👈 අලුතින් ඇඩ් කළා
+      'Expense'; // Transaction type: Expense, Income, Transfer
   String _selectedCategory = 'Food';
-  int? _selectedFromAccountId; // සල්ලි කැපෙන Account එක
-  int? _selectedToAccountId; // 💡 Transfer එකකදී සල්ලි වැටෙන Account එක
+  int? _selectedFromAccountId; // Account from which money is deducted
+  int? _selectedToAccountId; // Account receiving money in a transfer
 
   List<Map<String, dynamic>> _accounts = [];
 
@@ -51,7 +52,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _accounts = data;
       if (data.isNotEmpty) {
         _selectedFromAccountId =
-            data.first['id']; // Default එකට පළමු එකවුන්ට් එක ගන්නවා
+            data.first['id']; // Select first account as default
       }
     });
   }
@@ -73,7 +74,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
-    // 💡 1. TRANSFER එකක් නම් කරන්නේ මෙන්න මේකයි:
+    // 1. If Transfer transaction:
     if (_selectedType == 'Transfer') {
       if (_selectedToAccountId == null ||
           _selectedFromAccountId == _selectedToAccountId) {
@@ -92,11 +93,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         DateTime.now().toString().split(' ').first, // YYYY-MM-DD
       );
     }
-    // 2. සාමාන්‍ය INCOME / EXPENSE එකක් නම්:
+    // 2. If Income or Expense transaction:
     else {
       final db = await DatabaseHelper.instance.database;
 
-      // Transactions ටේබල් එකට දානවා
+      // Insert into transactions table
       await db.insert('transactions', {
         'amount': amount,
         'type': _selectedType,
@@ -106,7 +107,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         'account_id': _selectedFromAccountId,
       });
 
-      // අදාළ එකවුන්ට් එකේ බැලන්ස් එක අප්ඩේට් කරනවා
+      // Update account balance
       double balanceChange = _selectedType == 'Income' ? amount : -amount;
       await db.rawUpdate(
         'UPDATE accounts SET balance = balance + ? WHERE id = ?',
@@ -114,7 +115,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       );
     }
 
-    if (mounted) Navigator.pop(context); // ඉවර වෙලා ආපහු Dashboard එකට යනවා
+    SyncHelper.syncAllToCloud();
+    if (mounted) Navigator.pop(context); // Return to Dashboard after saving
   }
 
   @override
@@ -208,7 +210,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             }),
             SizedBox(height: 20),
 
-            // --- 4. 💡 TO ACCOUNT DROPDOWN (Transfer එකක් නම් විතරක් පෙනේ) ---
+            // --- 4. TO ACCOUNT DROPDOWN (Visible only for Transfer) ---
             if (_selectedType == 'Transfer') ...[
               Text("To Account",
                   style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
@@ -219,7 +221,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               SizedBox(height: 20),
             ],
 
-            // --- 5. CATEGORY DROPDOWN (Transfer වලට ඕන නෑ) ---
+            // --- 5. CATEGORY DROPDOWN (Not required for Transfer) ---
             if (_selectedType != 'Transfer') ...[
               Text("Category",
                   style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), fontSize: 13)),
@@ -305,7 +307,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  // එකවුන්ට් ඩ්‍රොප්ඩවුන් එක ලේසියෙන් හදන්න Helper Widget එකක්
+  // Helper widget to build account dropdown
   Widget _buildAccountDropdown(int? currentValue, Function(int?) onChanged) {
     return DropdownButtonFormField<int>(
       initialValue: currentValue,

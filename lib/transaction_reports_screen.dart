@@ -179,149 +179,215 @@ class _TransactionReportsScreenState extends State<TransactionReportsScreen> {
     }
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Padding(
-            padding: const pw.EdgeInsets.all(20),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+        margin: const pw.EdgeInsets.all(25),
+        header: (pw.Context context) {
+          return pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 12),
+            padding: const pw.EdgeInsets.only(bottom: 6),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(color: PdfColors.blue900, width: 1.5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  "TRANSACTION REPORT",
+                  "COFFER - TRANSACTION REPORT",
                   style: pw.TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
                     fontWeight: pw.FontWeight.bold,
                     color: PdfColors.blue900,
                   ),
                 ),
-                pw.SizedBox(height: 5),
                 pw.Text(
-                  "Generated: ${DateTime.now().toString().split(' ').first}",
-                  style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11),
-                ),
-                pw.Text(
-                  "Period: $dateRange",
-                  style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 11),
-                ),
-                pw.Text(
-                  "Category: $_selectedCategory | Account: $accountName",
-                  style: const pw.TextStyle(color: PdfColors.blue800, fontSize: 11),
-                ),
-                pw.Divider(thickness: 1.5, color: PdfColors.blue900),
-                pw.SizedBox(height: 15),
-
-                pw.Container(
-                  padding: const pw.EdgeInsets.all(15),
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.grey200,
-                    borderRadius: pw.BorderRadius.circular(10),
-                  ),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            "Total Income: Rs. ${_totalIncome.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 11,
-                              color: PdfColors.green800,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                          pw.Text(
-                            "Total Expense: Rs. ${_totalExpense.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 11,
-                              color: PdfColors.red800,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            "Net Change:",
-                            style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
-                          ),
-                          pw.Text(
-                            "${_netBalance >= 0 ? '+' : ''} Rs. ${_netBalance.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                              fontSize: 18,
-                              fontWeight: pw.FontWeight.bold,
-                              color: _netBalance >= 0 ? PdfColors.green800 : PdfColors.red800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                pw.SizedBox(height: 20),
-
-                pw.Text(
-                  "Transactions ($_totalCount records)",
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                ),
-                pw.SizedBox(height: 10),
-
-                pw.Table(
-                  border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
-                  children: [
-                    pw.TableRow(
-                      decoration: const pw.BoxDecoration(color: PdfColors.blue900),
-                      children: [
-                        _pdfHeader("Date"),
-                        _pdfHeader("Category"),
-                        _pdfHeader("Type"),
-                        _pdfHeader("Account"),
-                        _pdfHeader("Amount"),
-                      ],
-                    ),
-                    ..._searchResults.map((row) {
-                      double amt = (row['amount'] as num).toDouble();
-                      bool isIncome = row['type'] == 'Income';
-                      bool isTransfer = row['type'] == 'Transfer';
-                      String typeName = isTransfer ? 'Transfer' : (isIncome ? 'Income' : 'Expense');
-                      return pw.TableRow(
-                        children: [
-                          _pdfCell(row['date'].toString()),
-                          _pdfCell(row['category'].toString()),
-                          _pdfCell(typeName),
-                          _pdfCell((row['account_name'] ?? 'Unknown').toString()),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(8),
-                            child: pw.Text(
-                              "${isIncome ? '+' : (isTransfer ? '' : '-')} ${amt.toStringAsFixed(0)}",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: isTransfer ? PdfColors.blue800 : (isIncome ? PdfColors.green800 : PdfColors.red800),
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ],
-                ),
-
-                pw.Spacer(),
-                pw.Divider(color: PdfColors.grey300),
-                pw.Center(
-                  child: pw.Text(
-                    "Thank you for using Universal Wallet App",
-                    style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey500),
+                  dateRange,
+                  style: const pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey700,
                   ),
                 ),
               ],
             ),
           );
         },
+        footer: (pw.Context context) {
+          return pw.Container(
+            margin: const pw.EdgeInsets.only(top: 10),
+            padding: const pw.EdgeInsets.only(top: 6),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  "Generated: ${DateTime.now().toString().split('.').first}",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey500,
+                  ),
+                ),
+                pw.Text(
+                  "Page ${context.pageNumber} of ${context.pagesCount}",
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        build: (pw.Context context) => [
+          // Subheader details
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    "Period: $dateRange",
+                    style: const pw.TextStyle(
+                      color: PdfColors.grey700,
+                      fontSize: 10,
+                    ),
+                  ),
+                  pw.Text(
+                    "Category: $_selectedCategory | Account: $accountName",
+                    style: const pw.TextStyle(
+                      color: PdfColors.blue800,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+              pw.Text(
+                "Total: ${_searchResults.length} records",
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.grey800,
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+
+          // Summary card
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey200,
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "Total Income: Rs. ${_totalIncome.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.green800,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 3),
+                    pw.Text(
+                      "Total Expense: Rs. ${_totalExpense.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.red800,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      "Net Change:",
+                      style: const pw.TextStyle(
+                        fontSize: 10,
+                        color: PdfColors.grey700,
+                      ),
+                    ),
+                    pw.Text(
+                      "${_netBalance >= 0 ? '+' : ''} Rs. ${_netBalance.toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _netBalance >= 0
+                            ? PdfColors.green800
+                            : PdfColors.red800,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 15),
+
+          // Multi-page Table with repeating headers
+          pw.TableHelper.fromTextArray(
+            headers: ["Date", "Category", "Type", "Account", "Amount"],
+            data: _searchResults.map((row) {
+              final double amt = (row['amount'] as num).toDouble();
+              final bool isIncome = row['type'] == 'Income';
+              final bool isTransfer = row['type'] == 'Transfer';
+              final String typeName = isTransfer
+                  ? 'Transfer'
+                  : (isIncome ? 'Income' : 'Expense');
+              final String prefix = isIncome ? "+" : (isTransfer ? "" : "-");
+              return [
+                row['date']?.toString().split(' ').first ?? '',
+                row['category']?.toString() ?? '',
+                typeName,
+                (row['account_name'] ?? 'Unknown').toString(),
+                "$prefix Rs. ${amt.toStringAsFixed(2)}",
+              ];
+            }).toList(),
+            headerStyle: pw.TextStyle(
+              color: PdfColors.white,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 9,
+            ),
+            headerDecoration: const pw.BoxDecoration(
+              color: PdfColors.blue900,
+            ),
+            headerHeight: 24,
+            cellHeight: 22,
+            cellStyle: const pw.TextStyle(fontSize: 8.5),
+            cellPadding: const pw.EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: 4,
+            ),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              1: pw.Alignment.centerLeft,
+              2: pw.Alignment.centerLeft,
+              3: pw.Alignment.centerLeft,
+              4: pw.Alignment.centerRight,
+            },
+            rowDecoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+              ),
+            ),
+          ),
+        ],
       ),
     );
 
@@ -334,27 +400,6 @@ class _TransactionReportsScreenState extends State<TransactionReportsScreen> {
     } catch (e) {
       debugPrint("PDF Generation Error: $e");
     }
-  }
-
-  pw.Widget _pdfHeader(String text) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(
-          color: PdfColors.white,
-          fontWeight: pw.FontWeight.bold,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
-  pw.Widget _pdfCell(String text) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(text, style: const pw.TextStyle(fontSize: 10)),
-    );
   }
 
   @override

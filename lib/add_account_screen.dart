@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'sync_helper.dart';
 
 class AddAccountScreen extends StatefulWidget {
   const AddAccountScreen({super.key});
@@ -71,6 +72,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   'balance': balance,
                   'type': _selectedType,
                 });
+                SyncHelper.syncAllToCloud();
                 if (!context.mounted) return;
                 Navigator.pop(context);
               },

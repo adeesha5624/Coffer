@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'pin_screen.dart';
-import 'pin_helper.dart';
-import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(bool) onThemeChanged;
@@ -24,37 +21,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
-  // ✅ Login success වුණාට පස්සේ PIN check කරලා navigate කරනවා
+  // Handled via StreamBuilder and AuthSessionHandler upon successful login
   Future<void> _onLoginSuccess() async {
     if (!mounted) return;
-
-    final hasPin = await PinHelper.hasPin();
-
-    if (!mounted) return;
-
-    if (hasPin) {
-      // PIN දැනටමත් set කරලා තියෙනවා → Dashboard එකට යනවා
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DashboardScreen(
-            onThemeChanged: widget.onThemeChanged,
-            isDarkMode: widget.isDarkMode,
-          ),
-        ),
-      );
-    } else {
-      // PIN නැ → PIN Setup Screen එකට යනවා
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PinScreen(
-            mode: PinMode.setup,
-            onThemeChanged: widget.onThemeChanged,
-            isDarkMode: widget.isDarkMode,
-          ),
-        ),
-      );
+    if (Navigator.canPop(context)) {
+      Navigator.popUntil(context, (route) => route.isFirst);
     }
   }
 

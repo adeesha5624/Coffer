@@ -13,6 +13,7 @@ import 'reports_screen.dart';
 import 'transaction_reports_screen.dart';
 import 'pin_helper.dart';
 import 'login_screen.dart';
+import 'sync_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
   final Function(bool) onThemeChanged;
@@ -45,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _refreshData();
   }
 
-  // 🔄 ඩේටාබේස් එකෙන් ඇත්තම දත්ත ඇදලා චාර්ට් එකයි ඩෑෂ්බෝඩ් එකයි අප්ඩේට් කිරීම
+  // Refresh dashboard and chart data from database
   Future<void> _refreshData() async {
     final accountData = await DatabaseHelper.instance.getAccounts();
     final db = await DatabaseHelper.instance.database;
@@ -250,27 +251,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // 🔓 Logout Logic
   Future<void> _performLogout({required bool clearPin}) async {
     try {
-      // PIN clear කරන්න ඕනේ නම්
+      // 1. Sync all local data to cloud
+      await SyncHelper.syncAllToCloud();
+
+      // 2. Clear synced session flag for next login prompt
+      await SyncHelper.clearSessionSynced();
+
+      // Clear PIN if requested
       if (clearPin) {
         await PinHelper.clearPin();
       }
 
-      // Firebase Sign Out
-      await FirebaseAuth.instance.signOut();
-
       // Close local database to reset for next user
       await DatabaseHelper.instance.closeDatabase();
+
+      // Firebase Sign Out
+      await FirebaseAuth.instance.signOut();
 
       // Google Sign Out (if signed in via Google)
       try {
         await GoogleSignIn.instance.signOut();
       } catch (_) {
-        // Google sign-in නොකළ නම් ignore කරනවා
+        // Ignore if not signed in with Google
       }
 
       if (!mounted) return;
 
-      // Login Screen එකට navigate කරනවා
+      // Navigate to Login Screen
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(

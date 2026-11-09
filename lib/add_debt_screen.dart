@@ -2,6 +2,7 @@ import 'app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'database_helper.dart';
+import 'sync_helper.dart';
 
 class AddDebtScreen extends StatefulWidget {
   final String initialType;
@@ -31,7 +32,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     _loadDatabaseAccounts();
   }
 
-  // ඩේටාබේස් එකෙන් ඇත්තම එකවුන්ට්ස් ටික ගන්නවා
+  // Fetch accounts list from database
   Future<void> _loadDatabaseAccounts() async {
     try {
       final data = await DatabaseHelper.instance.getAccounts();
@@ -50,7 +51,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     }
   }
 
-  // දින වකවානු තෝරන හැටි
+  // Date picker selection logic
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -81,7 +82,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     }
   }
 
-  // 💡 පිරිසිදු කරන ලද නිවැරදි සේව් බටන් එකේ Logic එක
+  // Save button logic
   Future<void> _saveDebt() async {
     double amount = double.tryParse(_amountController.text) ?? 0.0;
     String personName = _nameController.text.trim();
@@ -95,7 +96,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     final db = await DatabaseHelper.instance.database;
 
-    // 1. ණය දත්ත ඇතුළත් කිරීම (Insert debt)
+    // 1. Insert debt record
     await db.insert('debts', {
       'amount': amount,
       'type': _debtType,
@@ -106,7 +107,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       'account_id': _selectedAccountId,
     });
 
-    // 2. ගිණුම් ශේෂය යාවත්කාලීන කිරීම (Update account balance)
+    // 2. Update account balance
     double balanceChange = _debtType == 'Give' ? -amount : amount;
 
     await db.rawUpdate(
@@ -114,6 +115,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       [balanceChange, _selectedAccountId],
     );
 
+    SyncHelper.syncAllToCloud();
     if (mounted) {
       Navigator.pop(context);
     }
@@ -181,12 +183,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                   SizedBox(height: 20),
 
-                  // Reason Input
-                  _label("Reason / Note"),
+                  // Reason / Description Input
+                  _label(
+                    _debtType == 'Take'
+                        ? "Description (What was it taken for?)"
+                        : "Description (What was it given for?)",
+                  ),
                   _buildTextField(
                     _reasonController,
-                    "What is this for?",
-                    Icons.edit_note,
+                    _debtType == 'Take'
+                        ? "e.g., Medical, Grocery, Business..."
+                        : "e.g., Friend loan, Lunch, Emergency...",
+                    Icons.description_outlined,
                   ),
 
                   SizedBox(height: 20),
@@ -202,7 +210,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                   SizedBox(height: 20),
 
-                  // Account Dropdown සහ Date Picker එක එක ළඟින්
+                  // Account Dropdown and Date Picker side by side
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

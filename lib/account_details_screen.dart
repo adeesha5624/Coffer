@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
+import 'sync_helper.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   final int accountId;
@@ -44,7 +45,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     final db = await DatabaseHelper.instance.database;
     List<_InsideItem> temp = [];
 
-    // 1. සාමාන්‍ය Transactions ඇදලා ගැනීම
+    // 1. Fetch standard transactions
     final txData = await db.query(
       'transactions',
       where: 'account_id = ?',
@@ -53,7 +54,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
     for (var row in txData) {
       double amt = (row['amount'] as num).toDouble();
-      // Transfer හෝ Expense නම් සල්ලි අඩු වෙනවා, Income නම් වැඩි වෙනවා
+      // Balance decreases for Transfer/Expense, increases for Income
       if (row['type'] == 'Expense' || row['type'] == 'Transfer') {
         amt = -amt.abs();
       } else if (row['type'] == 'Income') {
@@ -68,7 +69,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       ));
     }
 
-    // 2. 💡 ණය (Debts) ටේබල් එකෙන් මේ එකවුන්ට් එකට අදාළ දත්ත ඇදලා ගැනීම
+    // 2. Fetch debts related to this account from debts table
     final debtData = await db.query(
       'debts',
       where: 'account_id = ?',
@@ -77,11 +78,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
     for (var row in debtData) {
       double amt = (row['amount'] as num).toDouble();
-      String type = row['type'] as String; // 'Give' හෝ 'Take'
+      String type = row['type'] as String; // 'Give' or 'Take'
       String person = row['person_name'] as String;
       String reason = row['reason'] != null ? row['reason'] as String : '';
 
-      // ණය ගත්තා නම් (Take) සල්ලි එකතු වෙනවා, ණය දුන්නා නම් (Give) සල්ලි අඩු වෙනවා
+      // If loan taken (Take) add to balance, if loan given (Give) deduct from balance
       double calculatedAmt = type == 'Take' ? amt.abs() : -amt.abs();
       String displayText =
           type == 'Take' ? "Borrowed from $person" : "Lent to $person";
@@ -94,7 +95,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
       ));
     }
 
-    // 3. 📅 දත්ත ඔක්කොම දිනය අනුව අලුත්ම ඒවා උඩට එන විදිහට Sort කිරීම
+    // 3. Sort all records by date descending (newest first)
     temp.sort((a, b) => b.date.compareTo(a.date));
 
     setState(() {
@@ -130,6 +131,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 final nav = Navigator.of(context);
                 await DatabaseHelper.instance
                     .updateAccountName(widget.accountId, newName);
+                SyncHelper.syncAllToCloud();
                 if (!mounted) return;
                 setState(() => _currentAccountName = newName);
                 nav.pop();
@@ -157,6 +159,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () async {
               await DatabaseHelper.instance.deleteAccount(widget.accountId);
+              SyncHelper.syncAllToCloud();
               if (!context.mounted) return;
               Navigator.pop(context);
               Navigator.pop(context);
